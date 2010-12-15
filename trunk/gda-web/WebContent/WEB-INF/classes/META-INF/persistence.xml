@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+      http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
+
+	<persistence-unit name="gda" transaction-type="RESOURCE_LOCAL">
+		<class>au.org.intersect.gda.domain.GdaUser</class>
+		<class>au.org.intersect.gda.domain.Role</class>
+		<class>au.org.intersect.gda.domain.Authority</class>
+		<class>au.org.intersect.gda.domain.Project</class>
+		<class>au.org.intersect.gda.domain.Result</class>
+		<class>au.org.intersect.gda.domain.Team</class>
+		
+		<class>au.org.intersect.gda.domain.GdaUserAdditionalInfo</class>
+        
+        <class>au.org.intersect.gda.domain.Job</class>
+        <class>au.org.intersect.gda.domain.JobBilling</class>
+        <class>au.org.intersect.gda.domain.JobSample</class>
+        <class>au.org.intersect.gda.domain.JobUser</class>
+	</persistence-unit>
+
+</persistence>

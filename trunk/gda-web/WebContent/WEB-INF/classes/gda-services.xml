@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+    <!-- Message bundle - contains messages for use in the UI -->     
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="/WEB-INF/messages"/>
+    </bean>
+    
+    <!-- Task -->
+    
+    <bean id="jobProcessTask" class="au.org.intersect.gda.task.JobProcessTaskImpl">
+        <property name="jobManager" ref="jobManager"/>
+        <property name="jobProcessManager" ref="jobProcessManager"/>        
+    </bean>
+    
+    <bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="jobProcessTask" />
+        <property name="targetMethod" value="processApprovedJobs" />
+        <property name="concurrent" value="false" />
+	</bean>
+    
+    <bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+	    <property name="jobDetail" ref="jobDetail" />
+	    <!-- 10 seconds -->
+	    <property name="startDelay" value="10000" />
+	    <!-- repeat every 50 seconds -->
+	    <property name="repeatInterval">
+	    <value>${gda.processJob.interval}</value>
+	    </property>
+	</bean>
+	
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+	    <property name="triggers">
+	        <list>
+	            <ref bean="simpleTrigger" />
+	        </list>
+	    </property>
+	</bean>
+	    
+    <!-- Services -->
+    
+    <bean id="jobProcessManager" class="au.org.intersect.gda.manager.JobProcessManagerImpl">
+        <constructor-arg name="resultManager" ref="resultManager"/>
+        <constructor-arg name="resultMetaManager" ref="resultMetaManager"/>
+        <constructor-arg name="projectManager" ref="projectManager"/>
+        <constructor-arg name="jobManager" ref="jobManager"/>
+        <constructor-arg name="roche454MetaMappingMapper" ref="roche454MetaMappingMapper"/>
+        <constructor-arg name="illuminaMetaMappingMapper" ref="illuminaMetaMappingMapper"/> 
+    </bean>
+    
+    <bean id="resultService" class="au.org.intersect.gda.service.ResultServiceImpl">
+        <constructor-arg name="resultManager" ref="resultManager"/>        
+    </bean>
+    
+    <bean id="resultAncestryService" class="au.org.intersect.gda.service.ResultAncestryServiceImpl">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+        <constructor-arg name="resultPermissionChecker" ref="resultPermissionChecker"/>
+    </bean>
+    
+    
+    <bean id="resultManager" class="au.org.intersect.gda.manager.ResultManagerImpl">
+        <constructor-arg name="resultRepositoryManager" ref="resultRepositoryManager"/>
+        <constructor-arg name="resultDAO" ref="resultDAO"/>
+        <constructor-arg name="projectDAO" ref="projectDAO"/>
+        <constructor-arg name="resultSecurityHelper" ref="resultSecurityHelper"/>
+        <constructor-arg name="projectOaiUpdater" ref="projectOaiUpdater"/>
+    </bean>
+    
+    <bean id="resultAttachmentService" class="au.org.intersect.gda.service.ResultAttachmentServiceImpl">
+        <constructor-arg ref="resultAttachmentManager"/>
+    </bean>
+
+    <bean id="userManagementService" class="au.org.intersect.gda.service.UserManagementServiceImpl">
+    	<constructor-arg ref="gdaUserDAO"/>
+    	<constructor-arg ref="roleDAO"/>
+    	<constructor-arg ref="gdaUserDetailsAssembler"/>
+    	<constructor-arg ref="gdaUserAdditionalInfoAssembler"/>
+    	<constructor-arg name="sysAdminName" value="System Admin"/>
+    	<constructor-arg name="defaultRoleName" value="Registrant"/>       
+    	<constructor-arg name="projectOaiUpdater" ref="projectOaiUpdater"/>    	
+    </bean>
+    
+    <bean id="roleService" class="au.org.intersect.gda.service.RoleServiceImpl">
+        <constructor-arg ref="roleDAO"/>
+    </bean>
+
+    <bean id="projectService" class="au.org.intersect.gda.service.ProjectServiceImpl">
+        <constructor-arg name="projectManager" ref="projectManager"/>
+    </bean>    
+    
+    <bean id="projectManager" class="au.org.intersect.gda.manager.ProjectManagerImpl">
+        <constructor-arg ref="projectDAO"/>
+        <constructor-arg ref="projectAssembler"/>
+        <constructor-arg ref="gdaUserDAO"/>
+        <constructor-arg ref="resultRepositoryManager"/>
+        <constructor-arg ref="resultDAO"/>
+        <constructor-arg ref="teamDAO"/>
+        <constructor-arg ref="resultSecurityHelper"/>
+        <constructor-arg ref="projectOaiUpdater"/>
+    </bean>
+    
+    <bean id="teamService" class="au.org.intersect.gda.service.TeamServiceImpl">
+    	<constructor-arg ref="gdaUserDAO"/>
+    	<constructor-arg ref="teamDAO"/>
+    	<constructor-arg ref="teamAssembler"/>
+    </bean>
+    
+    <bean id="jobService" class="au.org.intersect.gda.service.JobServiceImpl">
+        <constructor-arg name="jobManager" ref="jobManager"/>
+    </bean>
+    
+    <bean id="resultAttachmentManager" class="au.org.intersect.gda.manager.ResultAttachmentManagerImpl">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="resultRepositoryManager" />
+    </bean>
+    
+    <bean id="jobManager" class="au.org.intersect.gda.manager.JobManagerImpl">
+        <constructor-arg name="jobDao" ref="jobDAO"/>
+        <constructor-arg name="jobAssembler" ref="jobAssembler"/>
+        <constructor-arg name="jobWithBillingAndSamplesAssembler" ref="jobWithBillingAndSamplesAssembler"/>
+    </bean>
+    
+     <bean id="resultSearchService" class="au.org.intersect.gda.service.ResultSearchServiceImpl">
+        <constructor-arg name="gdaUserDAO" ref="gdaUserDAO"/>
+        <constructor-arg name="resultRepositoryManager" ref="resultRepositoryManager"/>
+        <constructor-arg name="resultSecurityHelper" ref="resultSecurityHelper"/>       
+     </bean>
+     
+     <bean id="transferService" class="au.org.intersect.gda.service.TransferServiceImpl">
+        <constructor-arg name="opCodeToOperation">
+            <map key-type="java.lang.Byte">
+                <entry key="1" value-ref="createOperation"/>
+                <entry key="2" value-ref="putOperation"/>
+                <entry key="4" value-ref="closeOperation"/>
+                <entry key="8" value-ref="openOperation"/>
+                <entry key="16" value-ref="getOperation"/>
+                <entry key="32" value-ref="deleteOperation"/>
+            </map>
+        </constructor-arg>
+     </bean>
+     
+    <!-- transfer operations -->
+    <bean id="createOperation" class="au.org.intersect.gda.service.operation.CreateOperation">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="transferSecurityHelper" />
+    </bean>
+    <bean id="putOperation" class="au.org.intersect.gda.service.operation.PutOperation">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="transferSecurityHelper" />
+        <constructor-arg ref="checksumCalculator" />
+    </bean>
+    <bean id="closeOperation" class="au.org.intersect.gda.service.operation.CloseOperation">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="resultAttachmentManager"/>
+        <constructor-arg ref="transferSecurityHelper" />
+    </bean>
+    <bean id="openOperation" class="au.org.intersect.gda.service.operation.OpenOperation">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="transferSecurityHelper" />
+    </bean>
+    <bean id="getOperation" class="au.org.intersect.gda.service.operation.GetOperation">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="transferSecurityHelper" />
+        <constructor-arg ref="checksumCalculator" />
+    </bean>
+    <bean id="deleteOperation" class="au.org.intersect.gda.service.operation.DeleteOperation">
+        <constructor-arg ref="fileStorageManager" />
+        <constructor-arg ref="resultAttachmentManager" />
+        <constructor-arg ref="transferSecurityHelper" />
+    </bean>
+    
+    <bean id="transferSecurityHelper" class="au.org.intersect.gda.service.operation.TransferSecurityHelper">
+        <constructor-arg ref="sessionAuthHolder"/>
+        <constructor-arg ref="gdaUserDAO"/>
+        <constructor-arg ref="gdaUserDetailsAssembler"/>
+        <constructor-arg ref="resultAttachmentManager" />
+        <constructor-arg ref="resultSecurityHelper"/>
+        <constructor-arg ref="resultManager"/>
+        <constructor-arg value="${gda.transfer.cacheLifetime}" />
+    </bean>
+    
+    
+    <!-- Helper Classes -->
+    <bean id="fedoraDsHelper" class="au.org.intersect.gda.repository.fedora.FedoraDatastreamHelperImpl">
+        <constructor-arg name="fedoraComponentFactory" ref="fedoraComponentFactory"/>
+        <constructor-arg name="retryLimit" value="2"/>
+    </bean>
+        
+    <bean id="xpathHelper" class="au.org.intersect.gda.util.XpathHelper"/>
+    
+    <bean id="fedoraXmlTemplateBuilder" class="au.org.intersect.gda.repository.fedora.FedoraXmlTemplateBuilderImpl">
+        <constructor-arg name="templateName" value="template.xml"/>
+    </bean>
+    
+    <bean id="fedoraOaiTemplateBuilder" class="au.org.intersect.gda.repository.fedora.FedoraXmlTemplateBuilderImpl">
+        <constructor-arg name="templateName" value="oaiObjectTemplate.xml"/>
+    </bean>
+    
+    <bean id="fedoraRelxExtTemplateBuilder" class="au.org.intersect.gda.repository.fedora.FedoraXmlTemplateBuilderImpl">    
+        <constructor-arg name="templateName" value="rels-ext.xml"/>
+    </bean>
+    
+    <bean id="fedoraResultConfig" class="au.org.intersect.gda.repository.fedora.FedoraConfigImpl">
+	    <property name="username" value="${fedora.username}"/>
+        <property name="password" value="${fedora.password}"/>
+	    <property name="protocol" value="${fedora.protocol}"/>
+	    <property name="context" value="${fedora.context}"/>
+	    <property name="host" value="${fedora.host}"/>
+	    <property name="port" value="${fedora.port}"/>
+        <property name="namespace" value="${fedora.namespace}"/>
+    </bean>    
+    
+    <bean id="fedoraProjectConfig" class="au.org.intersect.gda.repository.fedora.FedoraConfigImpl">
+        <property name="username" value="${fedora.username}"/>
+        <property name="password" value="${fedora.password}"/>
+        <property name="protocol" value="${fedora.protocol}"/>
+        <property name="context" value="${fedora.context}"/>
+        <property name="host" value="${fedora.host}"/>
+        <property name="port" value="${fedora.port}"/>
+        <property name="namespace" value="${fedora.oainamespace}"/>
+    </bean>    
+    
+    <bean id="oaiConfig" class="au.org.intersect.gda.oai.OaiConfigImpl">
+        <constructor-arg name="xsdTimestampFormat" value="yyyy-MM-dd'T'HH:mm:ss.SSSZZ"/>
+        <constructor-arg name="relsExtDsId" value="RELS-EXT"/>
+        <constructor-arg name="projectDsId" value="project.xml"/>
+        <constructor-arg name="uuIdDsId" value="RifCsId"/>
+        <constructor-arg name="uuIdNodeName" value="RifCsId"/>
+        
+        <constructor-arg name="relsExtMime" value="application/rdf+xml"/>
+        <constructor-arg name="relsExtAttachToNodePath" value="//rdf:Description"/>
+        <constructor-arg name="relsExtOaiMarkerNodeName" value="oai:itemID"/>
+        <constructor-arg name="relsExtOaiMarkerNodePath" value="//oai:itemID"/>
+    </bean>    
+
+    <bean id="fedoraComponentFactory" class="au.org.intersect.gda.repository.fedora.FedoraComponentFactoryImpl">
+        <constructor-arg name="fedoraConfig" ref="fedoraResultConfig"/>
+    </bean>
+    
+    <bean id="gdaObjectMetaDataHelper" class="au.org.intersect.gda.metadata.GdaObjectMetaDataHelperDCImpl"/>
+    
+    <bean id="restSearchQueryUriBuilder" class="au.org.intersect.gda.rest.RESTGenericSearchUriBuilderImpl">
+        <constructor-arg name="serverUrl"   value="${fedora.protocol}://${fedora.host}:${fedora.port}${fedora.gsearch.context}${fedora.gsearch.uri}" />
+        <constructor-arg name="resultNamespace" value="${fedora.namespace}"/>
+    </bean>
+    
+    <bean id="restSearchResultInterpreter" class="au.org.intersect.gda.rest.RESTGenericSearchInterpreterImpl">
+        <constructor-arg name="xpathHelper" ref="xpathHelper"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+    </bean>
+        
+    <bean id="genericSearchIndexUpdater" class="au.org.intersect.gda.rest.RESTGenericSearchIndexUpdaterImpl">
+        <constructor-arg name="gdaHttpClient" ref="gdaHttpClient"/>
+        <constructor-arg name="serverUrl"   value="${fedora.protocol}://${fedora.host}:${fedora.port}${fedora.gsearch.context}${fedora.gsearch.uri}" />
+    </bean>
+    
+    <bean id="fedoraRepositoryRestSearcher" class="au.org.intersect.gda.repository.fedora.FedoraRepositoryRESTSearcherImpl">
+        <constructor-arg name="restSearchQueryUriBuilder" ref="restSearchQueryUriBuilder"/>
+        <constructor-arg name="restSearchResultInterpreter" ref="restSearchResultInterpreter"/>
+        <constructor-arg name="gdaHttpClient" ref="gdaHttpClient"/>
+        <constructor-arg name="paramHelper" ref="searchParamHelper"/>         
+    </bean>
+    
+    <bean id="searchParamHelper" class="au.org.intersect.gda.rest.RESTSearchParamHelperImpl">
+        <constructor-arg name="properties" ref="searchProperties"/>
+    </bean>    
+    
+    <util:properties id="searchProperties" location="classpath:genericSearch.properties"/>
+    
+        
+    <bean id="fedoraRepositorySearcher" class="au.org.intersect.gda.repository.fedora.FedoraRepositorySearcherImpl">
+        <constructor-arg name="fedoraComponentFactory" ref="fedoraComponentFactory"/>
+    </bean>    
+    
+    <bean id="fedoraRepositoryGetter" class="au.org.intersect.gda.repository.fedora.FedoraRepositoryGetterImpl">    
+        <constructor-arg name="fedoraDsHelper" ref="fedoraDsHelper"/>
+        <constructor-arg name="objMetaDataHelper" ref="gdaObjectMetaDataHelper"/>     
+        <constructor-arg name="fedoraRepositoryRestSearcher" ref="fedoraRepositoryRestSearcher"/>
+        <constructor-arg name="fedoraRepositorySearcher" ref="fedoraRepositorySearcher"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+    </bean>
+    
+    <bean id="fedoraResultRepositorySetter" class="au.org.intersect.gda.repository.fedora.FedoraResultRepositorySetterImpl">    
+        <constructor-arg name="fedoraComponentFactory" ref="fedoraComponentFactory"/>
+        <constructor-arg name="fedoraDsHelper" ref="fedoraDsHelper"/>
+        <constructor-arg name="fedoraXmlTemplateBuilder" ref="fedoraXmlTemplateBuilder"/>     
+        <constructor-arg name="objMetaDataHelper" ref="gdaObjectMetaDataHelper"/>     
+    	<constructor-arg name="fedoraConfig" ref="fedoraResultConfig"/> 
+    </bean>
+    
+    
+    <bean id="fedoraProjectRepositorySetter" class="au.org.intersect.gda.repository.fedora.FedoraProjectRepositorySetterImpl">    
+        <constructor-arg name="fedoraComponentFactory" ref="fedoraComponentFactory"/>
+        <constructor-arg name="fedoraDsHelper" ref="fedoraDsHelper"/>
+        <constructor-arg name="fedoraXmlTemplateBuilder" ref="fedoraOaiTemplateBuilder"/>     
+        <constructor-arg name="objMetaDataHelper" ref="gdaObjectMetaDataHelper"/>     
+        <constructor-arg name="fedoraConfig" ref="fedoraProjectConfig"/> 
+    </bean>
+    
+    <bean id="fedoraRepositoryRelationshipManager" class="au.org.intersect.gda.repository.fedora.FedoraRepositoryRelationshipManagerImpl">
+        <constructor-arg name="fedoraComponentFactory" ref="fedoraComponentFactory"/>
+    </bean>
+    
+    <bean id="fedoraRepositoryRISearcher" class="au.org.intersect.gda.repository.fedora.FedoraRepositoryRISearcherImpl">
+        <constructor-arg name="gdaHttpClient" ref="gdaHttpClient"/>
+        <constructor-arg name="fedoraRIUri"   value="${fedora.ri.protocol}://${fedora.host}:${fedora.ri.port}${fedora.context}${fedora.riuri}" />
+    </bean>
+
+    <bean id="gdaHttpClient" class="au.org.intersect.gda.http.GdaHttpClientImpl">
+        <constructor-arg name="httpClient" ref="httpClient"/>
+        <constructor-arg name="postMethodFactory" ref="postMethodFactory" />
+        <constructor-arg name="getMethodFactory" ref="getMethodFactory" />
+        <property name="xpathHelper" ref="xpathHelper"/>
+    </bean>
+    
+    <bean id="httpClient" class="org.apache.commons.httpclient.HttpClient">
+        <constructor-arg name="httpConnectionManager" ref="httpConnectionManager"/>
+    </bean>
+    
+    <bean id="httpConnectionManager" class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager"/>
+    
+    <bean id="postMethodFactory" class="au.org.intersect.gda.http.GdaHttpPostMethodFactoryImpl" />
+    
+    <bean id="getMethodFactory" class="au.org.intersect.gda.http.GdaHttpGetMethodFactoryImpl"/>
+        
+    <bean id="oaiIdGenerator" class="au.org.intersect.gda.oai.OaiIdGeneratorImpl">
+        <constructor-arg name="oaiIdPrefix" value="oai:gda:" />
+    </bean>
+    
+    <bean id="checksumCalculator" class="au.org.intersect.gda.util.ChecksumCalculatorImpl" />
+        
+    <!-- Assemblers -->
+    <bean id="gdaUserDetailsAssembler" class="au.org.intersect.gda.assembler.GdaUserAssemblerImpl">
+        <constructor-arg ref="roleDAO"/>
+        <constructor-arg ref="passwordEncoder"/>
+    </bean>
+    
+    <bean id="gdaUserAdditionalInfoAssembler" class="au.org.intersect.gda.assembler.GdaUserAdditionalInfoAssemblerImpl">
+
+    </bean>
+    
+    <bean id="projectAssembler" class="au.org.intersect.gda.assembler.ProjectAssemblerImpl">
+        <constructor-arg ref="gdaUserDetailsAssembler"/>
+        <constructor-arg ref="teamAssembler"/>
+    </bean>
+    
+	<bean id="teamAssembler" class="au.org.intersect.gda.assembler.TeamAssemblerImpl">
+        <constructor-arg ref="gdaUserDetailsAssembler"/>
+    </bean>
+    
+    
+    <bean id="jobAssembler" class="au.org.intersect.gda.assembler.JobAssemblerImpl">
+        <constructor-arg ref="gdaUserDetailsAssembler"/>
+    </bean>
+    
+    
+    <bean id="jobWithBillingAndSamplesAssembler" class="au.org.intersect.gda.assembler.JobWithBillingAndSamplesAssemblerImpl">
+        <constructor-arg ref="gdaUserDetailsAssembler"/>
+    </bean>
+        
+    
+    
+    
+    <bean id="projectOaiUpdater" class="au.org.intersect.gda.oai.ProjectOaiUpdaterImpl">
+        <constructor-arg name="projectDAO" ref="projectDAO"/>    
+        <constructor-arg name="projectRepositoryManager" ref="projectRepositoryManager"/>
+        <constructor-arg name="resultRepositoryManager" ref="resultRepositoryManager"/>
+    </bean>
+    
+    <!-- Managers -->
+    <bean id="resultRepositoryManager" class="au.org.intersect.gda.repository.fedora.FedoraResultRepositoryManagerImpl">    
+        <constructor-arg name="fedoraRepositoryGetter" ref="fedoraRepositoryGetter"/>
+        <constructor-arg name="fedoraResultRepositorySetter" ref="fedoraResultRepositorySetter"/>
+        <constructor-arg name="fedoraRepositoryRelationshipManager" ref="fedoraRepositoryRelationshipManager"/>
+        <constructor-arg name="fedoraRepositoryRISearcher" ref="fedoraRepositoryRISearcher"/>
+        <constructor-arg name="genericSearchIndexUpdater" ref="genericSearchIndexUpdater"/>
+    </bean>
+    
+    <bean id="projectRepositoryManager" class="au.org.intersect.gda.repository.fedora.FedoraProjectRepositoryManagerImpl">    
+        <constructor-arg name="fedoraProjectRepositorySetter" ref="fedoraProjectRepositorySetter"/>
+        <constructor-arg name="fedoraDsHelper" ref="fedoraDsHelper"/>
+        <constructor-arg name="fedoraRelxExtTemplateBuilder" ref="fedoraRelxExtTemplateBuilder"/>  
+        <constructor-arg name="oaiConfig" ref="oaiConfig"/>
+        <constructor-arg name="oaiIdGenerator" ref="oaiIdGenerator"/>
+    </bean>
+    
+    <bean id="fileStorageManager" class="au.org.intersect.gda.manager.FileStorageManagerImpl">
+        <constructor-arg ref="directoryStructureManager" />
+    </bean>
+    <bean id="directoryStructureManager" class="au.org.intersect.gda.manager.DirectoryStructureManagerImpl">
+        <constructor-arg name="fileRoot" >
+            <bean id="rootFile" class="java.io.File">
+                <constructor-arg type="java.lang.String" value="${fileRepository.fileRoot}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="bufferSize" value="${fileRepository.bufferSize}"/>
+    </bean>
+       
+    <!-- DAOs -->
+    <bean id="gdaUserDAO" class="au.org.intersect.gda.dao.GdaUserDAOImpl">
+        <constructor-arg value="System Admin"/>    
+    </bean>
+    
+    <bean id="roleDAO" class="au.org.intersect.gda.dao.RoleDAOImpl"/>
+    <bean id="projectDAO" class="au.org.intersect.gda.dao.ProjectDAOImpl"/>
+   	<bean id="teamDAO" class="au.org.intersect.gda.dao.TeamDAOImpl"/>
+    
+    <bean id="resultDAO" class="au.org.intersect.gda.dao.ResultDAOImpl"/>
+    <bean id="jobDAO" class="au.org.intersect.gda.dao.JobDAOImpl"/>
+    
+
+</beans>

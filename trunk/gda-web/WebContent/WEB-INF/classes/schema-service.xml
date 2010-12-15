@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
+    >
+    
+    <bean id="schemaService" class="au.org.intersect.gda.service.SchemaServiceImpl">
+        <constructor-arg name="schemaDirectory" value="file:${metadata.schema.directory}"/>
+        <constructor-arg name="stepSubDirectory" value="step"/>                       
+        <constructor-arg name="typeSchemaFileName" value="resultType.xsd"/>
+        <constructor-arg name="stepXSLFileName" value="classpath:stepSchemaXsl.xsl"/>
+    </bean>       
+    
+    <bean id="metaDisplayAssistant" class="au.org.intersect.gda.service.ResultMetaDisplayAssistantImpl">        
+        <constructor-arg name="schemaService" ref="schemaService"/>
+        <constructor-arg name="stepMetaHelper" ref="stepMetaHelper"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+    </bean>     
+
+    <bean id="resultMetaService" class="au.org.intersect.gda.service.ResultMetaServiceImpl">        
+        <constructor-arg name="resultMetaManager" ref="resultMetaManager"/>
+    </bean>
+    
+    <bean id="metaDisplayService" class="au.org.intersect.gda.service.MetadataDisplayServiceImpl">        
+        <constructor-arg name="resultMetaManager" ref="resultMetaManager"/>
+    </bean>
+        
+    <bean id="resultMetaManager" class="au.org.intersect.gda.manager.ResultMetaManagerImpl">        
+        <constructor-arg name="labelPrefix" value="step-data"/>
+        <constructor-arg name="resultRepositoryManager" ref="resultRepositoryManager"/>
+        <constructor-arg name="stepMetaHelper" ref="stepMetaHelper"/> 
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>    
+        <constructor-arg name="resultDAO" ref="resultDAO"/>
+        <constructor-arg name="projectOaiUpdater" ref="projectOaiUpdater"/>
+                                       
+    </bean>     
+    
+    
+    <bean id="stepDataValidator" class="au.org.intersect.gda.service.StepDataValidatorImpl">
+        <constructor-arg name="schemaService" ref="schemaService"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>        
+    </bean>    
+    
+    
+    <bean id="stepMetaHelper" class="au.org.intersect.gda.xml.StepMetaHelperImpl">
+        <constructor-arg name="defaultNamespace" value="http://www.gda.intersect.org"/>
+    </bean>    
+    
+    
+    
+    <bean id="resultSchemaHelper" class="au.org.intersect.gda.xml.ResultSchemaHelperImpl">
+        <constructor-arg name="schemaService" ref="schemaService"/>
+    </bean>    
+    
+    
+    <!-- Mappings components -->
+    
+    
+    <bean id="roche454MetaMappingEnumHelper" class="au.org.intersect.gda.mapping.MetaMappingEnumHelperImpl">
+        <constructor-arg name="schemaService" ref="schemaService"/>
+        <constructor-arg name="metaMappingConfig" ref="roche454Config"/>        
+    </bean>
+    
+      
+    <bean id="illuminaMetaMappingEnumHelper" class="au.org.intersect.gda.mapping.MetaMappingEnumHelperImpl">
+        <constructor-arg name="schemaService" ref="schemaService"/>
+        <constructor-arg name="metaMappingConfig" ref="illuminaConfig"/>        
+    </bean>
+    
+    
+    <bean id="roche454MetaMappingMapper" class="au.org.intersect.gda.mapping.MetaMappingMapperImpl">
+        <constructor-arg name="blankStepCreator" ref="roche454MetaMappingBlankStepCreator"/>
+        <constructor-arg name="metaMappingConfig" ref="roche454Config"/>
+        <constructor-arg name="sampleValueExtractor" ref="roche454SampleValueExtractor"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+    </bean>
+    
+    <bean id="illuminaMetaMappingMapper" class="au.org.intersect.gda.mapping.MetaMappingMapperImpl">
+        <constructor-arg name="blankStepCreator" ref="illuminaMetaMappingBlankStepCreator"/>
+        <constructor-arg name="metaMappingConfig" ref="illuminaConfig"/>
+        <constructor-arg name="sampleValueExtractor" ref="illuminaSampleValueExtractor"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+    </bean>
+    
+    <bean id="roche454SampleValueExtractor" class="au.org.intersect.gda.mapping.Roche454SampleValueExtractorImpl"/>
+    <bean id="illuminaSampleValueExtractor" class="au.org.intersect.gda.mapping.IlluminaSampleValueExtractorImpl"/>
+    
+        
+    <bean id="roche454MetaMappingBlankStepCreator" class="au.org.intersect.gda.mapping.MetaMappingBlankStepCreatorImpl">
+        <constructor-arg name="schemaService" ref="schemaService"/>
+        <constructor-arg name="stepMetaHelper" ref="stepMetaHelper"/>
+        <constructor-arg name="metaMappingConfig" ref="roche454Config"/>
+    </bean>
+    
+    <bean id="illuminaMetaMappingBlankStepCreator" class="au.org.intersect.gda.mapping.MetaMappingBlankStepCreatorImpl">
+        <constructor-arg name="schemaService" ref="schemaService"/>
+        <constructor-arg name="stepMetaHelper" ref="stepMetaHelper"/>
+        <constructor-arg name="metaMappingConfig" ref="illuminaConfig"/>
+    </bean>
+    
+    
+    <bean id="illuminaConfig" class="au.org.intersect.gda.mapping.MetaMappingConfig">
+        <constructor-arg name="config" ref="illuminaProperties"/>
+    </bean>
+    
+    <bean id="roche454Config" class="au.org.intersect.gda.mapping.MetaMappingConfig">
+        <constructor-arg name="config" ref="roche454Properties"/>
+    </bean>  
+        
+        
+    <util:properties id="roche454Properties" location="file:${metadata.schema.directory}/roche454Mapping.properties"/>
+        
+    <util:properties id="illuminaProperties" location="file:${metadata.schema.directory}/illuminaMapping.properties"/>
+    
+       
+</beans>

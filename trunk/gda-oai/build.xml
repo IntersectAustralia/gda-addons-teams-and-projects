@@ -1,0 +1,173 @@
+<project name="FedoraOai" default="install" basedir=".">
+
+	<description>Build file for building a Fedora instance for OAI</description>
+
+	<import file="${basedir}/../intersect-common/common-build.xml" />
+	<property name="web.content.dir" location="oaiprovider" />
+	<property name="war.file" location="${dist.dir}/oaiprovider.war" />
+	<property name="config.dir" location="config" />
+	<property name="ssl.dir" location="sslconfig"/>
+	<property environment="env" />
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+
+	<path id="jdbc.classpath">
+		<fileset dir="database">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="-check-fedora-home">
+
+		<fail unless="env.FEDORA_HOME" message="FEDORA_HOME environment variable must be set before building fedora" />
+		<echo message="Fedora Home = ${env.FEDORA_HOME}" />
+		<property name="fedora.home" value="${env.FEDORA_HOME}" />
+		<property name="tomcat.home" value="${fedora.home}/tomcat" />
+		<property name="tomcat.bin" value="${tomcat.home}/bin" />
+		<property name="tomcat.lib.dir" location="${tomcat.home}/lib" />
+		<property name="tomcat.client.bin" location="${fedora.home}/client/bin"/>
+	</target>
+
+	<target name="-create-db">
+		<sql classpathref="jdbc.classpath" driver="org.postgresql.Driver" url="jdbc:postgresql://localhost:5432" userid="postgres" password="postgres" src="database/proai-drop-db.sql" autocommit="true" onerror="continue" />
+		<sql classpathref="jdbc.classpath" driver="org.postgresql.Driver" url="jdbc:postgresql://localhost:5432" userid="postgres" password="postgres" autocommit="true" src="database/proai-create-db.sql" />
+	</target>
+
+
+	<target name="-eval-platform">
+		<condition property="isWindows">
+			<os family="windows" />
+		</condition>
+		<condition property="isLinux">
+			<os family="unix" />
+		</condition>
+	</target>
+
+
+    <target name="-clean">
+        <delete dir="${build.dir}" />
+    </target>
+    
+	<!--start both tomcats-->
+	<target name="-start-tomcat">
+        <ant antfile="${basedir}/../gda-tomcat/build.xml" 
+            inheritAll="false" 
+            target="-start-tomcat"/>
+        <ant antfile="${basedir}/../gda-repository/Fedora/build.xml" 
+                    inheritAll="false" 
+                    target="-start-tomcat"/>
+	</target>
+
+	<!--stop both tomcats-->
+	<target name="-stop-tomcat">
+		<ant antfile="${basedir}/../gda-tomcat/build.xml" 
+			inheritAll="false" 
+			target="-stop-tomcat"/>
+		<ant antfile="${basedir}/../gda-repository/Fedora/build.xml" 
+		            inheritAll="false" 
+		            target="stop-tomcat"/>
+	</target>
+
+	<target name="-webapp">
+        <filter filtersfile="${config.dir}/oai.properties" />           
+        <copy todir="${dist.work.dir}" overwrite="true">
+            <fileset dir="${web.content.dir}" />
+        </copy>
+		<!--only need to run filter on this properties file-->
+		<copy filtering="true" file="${web.content.dir}/WEB-INF/classes/proai.properties" tofile="${dist.work.dir}/WEB-INF/classes/proai.properties" overwrite="true" />            
+    </target>
+
+
+	<target name="-war" depends="-webapp">
+		<!-- War it up -->
+        <war basedir="${dist.work.dir}" destfile="${war.file}" webxml="${dist.work.dir}/WEB-INF/web.xml" />		
+	</target>
+
+	<target name="-deploy-to-tomcat" depends="-war">
+        <ant antfile="${basedir}/../gda-tomcat/build.xml" inheritAll="false" target="-deploy-war">
+        	<property name="war.file" value="${war.file}" />
+        </ant>  
+		<ant antfile="${basedir}/../gda-tomcat/build.xml" inheritAll="false" target="-copy-to-bin">
+            <property name="dir.to.copy" value="${basedir}/rif-cs-schema" />
+        </ant>  
+	</target>
+
+
+	<target name="-run-ingest">		
+		<sleep seconds="30" />
+        <filter filtersfile="${config.dir}/oai.properties" />           
+		<copy filtering="true" todir="${dist.work.dir}/oaiTemplate" overwrite="true">
+            <fileset dir="${basedir}/oaiTemplate" />
+        </copy>
+		<exec executable="/bin/sh" os="Linux">
+			<arg value="-c"/>
+		    <arg value="${fedora.home}/client/bin/fedora-batch-ingest.sh ${dist.work.dir}/oaiTemplate ${dist.work.dir}/oaiIngest.log xml info:fedora/fedora-system:FOXML-1.1 localhost:8090 fedoraAdmin fedora http"/>
+		</exec>
+
+		<exec dir="." executable="cmd" os="Windows NT, Windows XP">
+			<arg line="/c ${fedora.home}/client/bin/fedora-batch-ingest.bat" />
+			<arg value="${dist.work.dir}/oaiTemplate" />
+			<arg value="${dist.work.dir}/oaiIngest.log" />
+			<arg value="xml" />
+			<arg value="info:fedora/fedora-system:FOXML-1.1" />
+			<arg value="localhost:8090" />
+			<arg value="fedoraAdmin" />
+			<arg value="fedora" />
+			<arg value="http" />
+		</exec>
+	</target>
+	
+	
+	<target name="-prepare-for-ssl-oai-ingest">
+	    <copy todir="${tomcat.client.bin}" overwrite="true">
+	    	<fileset dir="${ssl.dir}"/>
+	    </copy>
+		
+	</target>
+	
+    <target name="-run-ingest-ssl" depends="-prepare-for-ssl-oai-ingest">     
+        
+        <filter filtersfile="${config.dir}/oai.properties" />           
+        <copy filtering="true" todir="${dist.work.dir}/oaiTemplate" overwrite="true">
+            <fileset dir="${basedir}/oaiTemplate" />
+        </copy>
+
+        <chmod file="${fedora.home}/client/bin/fedora-batch-ingest-ssl.sh" perm="a+x" os="Linux"/>
+        <exec executable="/bin/sh" os="Linux">
+            <arg value="-c"/>
+            <arg value="${fedora.home}/client/bin/fedora-batch-ingest-ssl.sh ${dist.work.dir}/oaiTemplate ${dist.work.dir}/oaiIngest.log xml info:fedora/fedora-system:FOXML-1.1 localhost:8453 fedoraAdmin fedora https"/>
+        </exec>
+
+        <exec dir="." executable="cmd" os="Windows NT, Windows XP">
+            <arg line="/c ${fedora.home}/client/bin/fedora-batch-ingest-ssl.bat" />
+            <arg value="${dist.work.dir}/oaiTemplate" />
+            <arg value="${dist.work.dir}/oaiIngest.log" />
+            <arg value="xml" />
+            <arg value="info:fedora/fedora-system:FOXML-1.1" />
+            <arg value="localhost:8453" />
+            <arg value="fedoraAdmin" />
+            <arg value="fedora" />
+            <arg value="https" />
+        </exec>
+    </target>	
+	
+	<target name="-copy-template-to-dist">
+		<copy todir="${dist.dir}/oaiTemplate">
+			  <fileset dir="oaiTemplate"/>
+		</copy>
+	</target>
+
+	<!-- Public Targets -->
+	<target name="clean-data" depends="create-db, -run-ingest" description="Recreates the oai database thus clearing its data" />
+	<target name="clean-data-ssl" depends="create-db, -run-ingest-ssl" description="Recreates the oai database thus clearing its data ssl" />
+	<target name="war" depends="-check-fedora-home, -init, -war" description="Build the OAI war file for the server" />
+	<target name="install" depends="-check-fedora-home, -clean, -init, -stop-tomcat, -create-db, -deploy-to-tomcat, -start-tomcat, -run-ingest" description="Clean install of Oai" />
+	<target name="install-ssl" depends="-check-fedora-home, -clean, -init, -stop-tomcat, -create-db, -deploy-to-tomcat, -start-tomcat, -run-ingest-ssl" description="Clean install of Oai" />
+	<target name="create-db" depends="-check-fedora-home, -init, -create-db" description="Drop and recreate an empty fedora database" />
+    <target name="deploy-to-tomcat" depends="-check-fedora-home, -deploy-to-tomcat" description="Deploy the war" /> 
+    <target name="clean" depends="-clean" description="Delete build artifacts" />
+	
+	<target name="dist" depends="clean, war, -copy-template-to-dist" description="Build deployable artifacts" />
+
+</project>

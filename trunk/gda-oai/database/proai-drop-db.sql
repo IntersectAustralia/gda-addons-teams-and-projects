@@ -1,0 +1,4 @@
+DROP DATABASE IF EXISTS "proai";
+
+DROP USER IF EXISTS proai;
+  

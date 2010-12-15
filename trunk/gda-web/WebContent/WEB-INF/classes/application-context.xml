@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:context="http://www.springframework.org/schema/context" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd" 
+    default-autowire="byName"
+    >
+
+	<!-- Allow Annotation-based Spring MVC config -->
+	<context:annotation-config />
+	
+    <bean class="org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor"/>
+    
+	<!-- Property Configurer -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:gda-config.properties"/>
+	</bean>
+    
+	<!-- Default ExceptionHandler -->
+	 
+	<bean id="defaultExceptionHandler" class="au.org.intersect.gda.web.MappingExceptionResolver">
+		<property name="order" value="10" />
+		<property name="defaultErrorView" value="error" />
+		<property name="exceptionMappings">
+			<props>
+				<prop key="org.springframework.security.access.AccessDeniedException">unauthorised</prop>
+				<prop key="au.org.intersect.gda.service.HasChildrenOnDeletionException">hasChildrenOnDeletionException</prop>
+				<prop key="MetaSourceException">metaSourceException</prop>
+				<prop key="SchemaSourceException">schemaSourceException</prop>
+				<prop key="XSLSourceException">xslSourceException</prop>
+				<prop key="RepositoryException">repositoryException</prop>
+				<prop key="SystemException">systemException</prop>
+			</props>
+		</property>
+	</bean>
+     
+     
+	<!-- Datasource used for the persistence of users and roles -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	        <property name="driverClassName"><value>${gda.jdbc.driverClassName}</value></property>
+	        <property name="url"><value>${gda.jdbc.url}</value></property>
+	        <property name="username"><value>${gda.jdbc.username}</value></property>
+	        <property name="password"><value>${gda.jdbc.password}</value></property>
+	        <property name="poolPreparedStatements"><value>${gda.poolPreparedStatements}</value></property>
+	        <property name="maxActive"><value>${gda.maxActive}</value></property>
+	        <property name="maxIdle"><value>${gda.maxIdle}</value></property>
+	</bean>
+ 
+	<!-- JPA & Hibernate -->
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="showSql" value="${gda.showSql}" />
+				<property name="generateDdl" value="${gda.generateDdl}" />
+				<property name="databasePlatform" value="${gda.hibernate.dialect}" />
+			</bean>
+		</property>
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.dialect">${gda.hibernate.dialect}</prop>
+				<prop key="hibernate.hbm2ddl.auto">${gda.hibernate.hbm2ddl.auto}</prop>
+				<prop key="hibernate.jdbc.batch_size">${gda.hibernate.jdbc.batch_size}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!--  Transaction management -->
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" >
+	   <property name="entityManagerFactory" ref="entityManagerFactory"/>
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+
+</beans>

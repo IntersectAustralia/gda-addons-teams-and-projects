@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject PID="oai:OAIRifCsItem-Service" VERSION="1.1"
+  xmlns:foxml="info:fedora/fedora-system:def/foxml#">
+  <foxml:objectProperties>
+    <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+    <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="Service Definition for oai:OAIRifCsItem"/>
+    <foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2010-03-29T15:00:00.000Z"/>
+    <foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2010-03-29T15:00:00.000Z"/>
+  </foxml:objectProperties>
+  <foxml:datastream CONTROL_GROUP="X" ID="DC" STATE="A" VERSIONABLE="true">
+    <foxml:datastreamVersion CREATED="2008-07-21T11:49:35.109Z"
+      FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/" ID="DC1.0"
+      LABEL="Dublin Core Metadata for Service" MIMETYPE="text/xml">
+      <foxml:xmlContent>
+        <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/">
+          <dc:title>Service Definition for oai:OAIRifCsItem</dc:title>
+          <dc:creator>Intersect Australia</dc:creator>
+          <dc:description>Service description</dc:description>
+          <dc:identifier>oai:OAIRifCsItem-Service</dc:identifier>
+        </oai_dc:dc>
+      </foxml:xmlContent>
+    </foxml:datastreamVersion>
+  </foxml:datastream>
+  <foxml:datastream CONTROL_GROUP="X" ID="RELS-EXT" STATE="A" VERSIONABLE="true">
+    <foxml:datastreamVersion CREATED="2010-03-29T15:00:00.000Z"
+      FORMAT_URI="info:fedora/fedora-system:FedoraRELSExt-1.0" ID="RELS-EXT.0"
+      LABEL="RDF Statements about this object" MIMETYPE="application/rdf+xml">
+      <foxml:xmlContent>
+        <rdf:RDF xmlns:fedora-model="info:fedora/fedora-system:def/model#"
+          xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+          <rdf:Description rdf:about="info:fedora/oai:OAIRifCsItem-Service">
+            <fedora-model:hasModel rdf:resource="info:fedora/fedora-system:ServiceDefinition-3.0"/>
+          </rdf:Description>
+        </rdf:RDF>
+      </foxml:xmlContent>
+    </foxml:datastreamVersion>
+  </foxml:datastream>
+  <foxml:datastream CONTROL_GROUP="X" ID="METHODMAP" STATE="A" VERSIONABLE="true">
+    <foxml:datastreamVersion CREATED="2010-03-29T15:00:00.000Z"
+      FORMAT_URI="info:fedora/fedora-system:FedoraSDefMethodMap-1.0"
+      ID="METHODMAP1.0" LABEL="Abstract Method Map" MIMETYPE="text/xml">
+      <foxml:xmlContent>
+        <fmm:MethodMap xmlns:fmm="http://fedora.comm.nsdlib.org/service/methodmap" name="MethodMap - Operations on objects">
+          <fmm:Method label="Get the metadata block in the specified format" operationName="getMetadata"/>    
+          <fmm:Method label="Get the about block for a metadata format" operationName="getMetadataAbout"/>            
+          
+                      
+          
+        </fmm:MethodMap>
+
+      </foxml:xmlContent>
+    </foxml:datastreamVersion>
+  </foxml:datastream>
+</foxml:digitalObject>

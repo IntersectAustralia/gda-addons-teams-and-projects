@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions [
+        <!ELEMENT suppressions (suppress*)>
+       
+        <!ELEMENT suppress EMPTY>
+        <!ATTLIST suppress files CDATA #REQUIRED
+                           checks CDATA #IMPLIED
+                           id CDATA #IMPLIED
+                           lines CDATA #IMPLIED
+                           columns CDATA #IMPLIED>
+]>
+<suppressions>
+
+	<!-- Add suppressions here if needed -->
+    <!-- decoding byte[] into String -->
+    <suppress checks="IllegalInstantiation" files="AbstractOperation" />
+
+	<!-- Suppressions for test code -->
+	<suppress checks="MultipleStringLiterals" files="[/\\]test[/\\]" />
+	<suppress checks="MagicNumber" files="[/\\]test[/\\]" />
+	<suppress checks="ImportControl" files="[/\\]test[/\\]" />
+	<suppress checks="IllegalCatch" files="[/\\]test[/\\]" />
+	<suppress checks="ThrowsCount" files="[/\\]test[/\\]" />
+
+	<suppress checks="ExecutableStatementCount" files="[/\\]test[/\\]" />
+	<suppress checks="OuterTypeNumber" files="[/\\]test[/\\]" />
+	<suppress checks="JavaNCSS" files="[/\\]test[/\\]" />
+	<suppress checks="ClassDataAbstractionCoupling" files="[/\\]test[/\\]" />
+	<suppress checks="CyclomaticComplexity" files="[/\\]test[/\\]" />
+	<suppress checks="ClassFanOutComplexity" files="[/\\]test[/\\]" />
+	<suppress checks="NPathComplexity" files="[/\\]test[/\\]" />
+
+	<suppress checks="MethodLength" files="[/\\]test[/\\]" />
+	<suppress checks="FileLength" files="[/\\]test[/\\]" />
+	<suppress checks="ReturnCount" files="[/\\]test[/\\]" />
+	<suppress checks="ParameterNumber" files="[/\\]test[/\\]" />
+    
+    <suppress checks="IllegalType" files="[/\\]test[/\\]" />
+    <suppress checks="AvoidStaticImport" files="[/\\]test[/\\]" />
+	<!-- End of test code suppressions -->
+	
+	<suppress checks="IllegalCatch" files="GdaUserDetailsManager"/>
+
+    <suppress checks="ClassFanOutComplexity" files="StepMetaHelper" />
+    <suppress checks="ClassFanOutComplexity" files="ResultMetaDisplayAssistantImpl" />
+    <suppress checks="ClassFanOutComplexity" files="ResultMetaManagerImpl" />
+    <suppress checks="ClassFanOutComplexity" files="StepDataValidatorImpl" />
+    <suppress checks="ClassFanOutComplexity" files="ResultMetaController" />
+    <suppress checks="ClassFanOutComplexity" files="MetaDisplayController" />
+    <suppress checks="ClassFanOutComplexity" files="SchemaServiceImpl" />
+    <suppress checks="ClassFanOutComplexity" files="FedoraRepositorySetterImpl" />
+    <suppress checks="ClassFanOutComplexity" files="ProjectManagerImpl" />
+    <suppress checks="ClassFanOutComplexity" files="FedoraDatastreamHelperImpl" />
+    <suppress checks="ClassFanOutComplexity" files="FedoraProjectRepositoryManagerImpl" />
+    <suppress checks="ClassFanOutComplexity" files="MetaMappingBlankStepCreatorImpl" />
+    
+    <suppress checks="ClassFanOutComplexity" files="ResultSearchController" />
+    
+    <!-- Xpath requires too much class imports -->
+    <suppress checks="ClassFanOutComplexity" files="MetaMappingMapperImpl" />
+    
+    <!-- Ignore instantiation of java.lang.String -->
+    <suppress checks="IllegalInstantiation" files="FileHandlerTest"/>
+    
+    <!-- Validation annotations use magic numbers for length restriction -->
+    <suppress checks="MagicNumber" files="GdaUserDTO" />
+    <suppress checks="MagicNumber" files="GdaUserWithAdditionalInfoDTO" />
+    <suppress checks="MagicNumber" files="ProjectDTO" />
+    <suppress checks="MagicNumber" files="TeamDTO" />
+    
+    <!-- Controller throws exceptions for spring to resolve -->
+    <suppress checks="ThrowsCount" files="ResultMetaController" />
+    
+    <suppress checks="ThrowsCount" files="MetaDisplayController" />
+
+    <suppress checks="MagicNumber" files="FedoraConfigImpl" />
+    
+    <suppress checks="ParameterNumber" files="OaiConfigImpl" />
+    
+    <!-- Constructor usage -->
+    <suppress checks="ParameterNumber" files="ProjectManagerImpl" />
+    
+    <suppress checks="ParameterNumber" files="RESTGenericSearchUriBuilderImpl" />
+    
+    <suppress checks="ParameterNumber" files="JobConfig" />
+    
+    <!-- Spring param binding -->
+    <suppress checks="ParameterNumber" files="ProjectController" />
+    
+    <!-- Assembler needs to call a lot of getter setters -->
+    <suppress checks="ExecutableStatementCount" files="GdaUserAdditionalInfoAssemblerImpl" />
+    <!-- MappingConfig needs to load many values from the properties file -->
+    <suppress checks="ExecutableStatementCount" files="MetaMappingConfig" />    
+    <suppress checks="BooleanExpressionComplexity" files="MetaMappingConfig" />
+    <suppress checks="NPathComplexity" files="MetaMappingConfig" />
+    
+    <!-- JobProcess need to suppress all exceptions arising from individual jobs -->
+    <suppress checks="IllegalCatch" files="JobProcessTaskImpl"/>
+    <suppress checks="IllegalCatch" files="JobProcessManagerImpl" />
+    <suppress checks="IllegalCatch" files="ProjectOaiUpdaterImpl"/>
+    
+    <!-- Validator needs to check lots of fields -->
+    <suppress checks="ExecutableStatementCount" files="SignUpUserValidator" />
+    
+    <suppress checks="[a-zA-Z0-9]*" files="org.json.*" />
+
+</suppressions>
