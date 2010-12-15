@@ -1,0 +1,76 @@
+JARs that are deployed in the webapp live in WebContent/WEB-INF/lib
+JARs that are used for build/test only are in lib/test
+Source zips are in lib/source
+
+
+This file contains details of the JARS required for GDA and why they are there.
+
+---------------------------------------------------------------------------------
+SPRING
+---------------------------------------------------------------------------------
+spring-2.5.6.SEC01 - core spring
+
+required by Spring Core:
+	commons-logging-1.1.1
+	commons-collections-3.1
+	cglib-nodep-2.1.3
+	aspectjrt-1.6.2
+
+spring-test-2.5.6.SEC01 - spring testing support - for spring-aware unit testing
+spring-security-core-2.0.4 - core spring security	
+spring-security-core-tiger-2.0.4 - annotations etc for spring security core
+spring-security-portlet-2.0.4 - portlet specific security
+
+spring-webmvc-2.5.6SEC01 - Web MVC framework
+spring-webmvc-portlet-2.5.6SEC01 - Portlet stuff for web MVC framework
+
+required by Spring MVC:
+	jstl-1.1.0.jar - Spring depends on this version so using that unless we find a reason to use a newer one
+	standard-1.1.2.jar - Jakarta implementation of the standard taglibs
+	servlet-api-2.5.jar - Required at build time but excluded from the built WAR file
+	portlet-api-2.0.jar - Required at build time but excluded from the built WAR file
+
+	
+---------------------------------------------------------------------------------
+HIBERNATE
+---------------------------------------------------------------------------------
+hibernate-3.3.1.GA
+hibernate-entitymanager-3.4.0.GA - JPA support
+hibernate-annotations-3.4.0.GA - although we are only using JPA annotations things break without this
+hibernate-commons-annotations-3.4.0.GA - things break without this
+
+required by Hibernate:
+	dom4j-1.6.1
+	slf4j-api-1.5.2
+	slf4j-log4j12-1.5.2 (we've chosen the log4j implementation of slf4j)
+	jta-1.1
+	javassist-3.4.GA
+	antlr-2.7.6
+
+---------------------------------------------------------------------------------
+OTHER STUFF
+---------------------------------------------------------------------------------
+ejb3-persistence-1.0.2.GA - JPA API classes
+
+log4j-1.2.15 - logging framework - also required by slf4j-log4j12
+
+hsqldb-1.8.0.10 - Hypersonic database for development purposes. Should really be in the lib/test tree once we have a Postgres database	
+
+dozer-5.0 - map between bean clasess - using to automagically map domain objects <--> dtos
+required by Dozer:
+	commons-beanutils-1.8.0
+	commons-lang-2.4
+
+---------------------------------------------------------------------------------
+BUILD/TEST ONLY STUFF
+---------------------------------------------------------------------------------
+junit-4.4 - for unit tests. Using 4.4 as 4.5+ are not compatible with spring-test 2.5.x
+
+checkstyle-5.0 - code style checks - runs in build
+
+cobertura-1.9.1 - test coverage analysis tool
+required by Cobertura:
+	jakarta-oro-2.0.8
+	asm-3.0
+	asm-tree-3.0
+

@@ -1,0 +1,466 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="spring"  uri="http://www.springframework.org/tags" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
+<c:url var="ajaxResultUrl" value="/ajax/ownResultAjax"/>
+
+
+
+<spring:message var="confirmRemoveResultMsg" 
+    code="projects.edit.confirmRemoveResult" text="?Confirm Remove %X ?"/>
+
+<spring:message var="confirmRemoveTeamMsg" 
+    code="projects.edit.confirmRemoveTeam" text="?Confirm Remove %X ?"/>
+
+<spring:message var="confirmRemoveUserMsg" 
+    code="projects.edit.confirmRemoveUser" text="?Confirm Remove %X ?"/>
+
+<c:url var="viewBulkUrl" value="displayResultMeta"/>
+<c:url var="editBulkUrl" value="editResultMeta"/> 
+ 
+ 
+<spring:message var="noEditPermissionMessage" code="results.bulk.noEditPermission"/>
+
+<spring:message var="hasChildren" code="result.delete.warnHasChildren"/>
+<spring:message var="warningMessage" code="result.delete.warn"/>
+<spring:message var="noDeleteMessage" code="notice.info.resultDeleteCancelled" text="?Result Delete Cancelled?"/>
+
+ <c:url var="searchResultsUrl" value="/ajax/ownResultSearchAjax"/>
+ 
+<script type="text/javascript">
+
+
+    jQuery(document).ready(
+        function()
+        {
+            var fullEdit = ${doFullEdit};
+          
+            //search
+            var allUsersSearch = GDA.setupSearch("#allUsersTable");
+
+            var allTeamsSearch = GDA.setupSearch("#allTeamsTable");
+
+
+            var cancelSubmit = jQuery("#cancel_submit");
+
+            GDA.preventMultipleClick(cancelSubmit);
+
+            var submitCancelFunc = function()
+            {
+                var hiddenSubmit = jQuery("#form_hidden_submit"); 
+                hiddenSubmit.attr("name", "_cancel");
+                hiddenSubmit.attr("value", "Cancel");
+                jQuery("#project").submit();
+            };
+            
+            cancelSubmit.click(submitCancelFunc);
+
+
+            var submitSubmitFunc = function(redirect)
+            {
+                var hiddenSubmit = jQuery("#form_hidden_submit"); 
+                hiddenSubmit.attr("name", "_submit");
+                hiddenSubmit.attr("value", "submit");
+
+                 
+                var hiddenRedirect = jQuery("#form_hidden_redirect");
+                
+                if (redirect != null)
+                {
+                    hiddenRedirect.attr("value", redirect);
+                } else
+                {
+                    hiddenRedirect.attr("value", "");
+                }
+                
+                jQuery("#project").submit();
+            };
+
+            var cancelAlertFunc = function(container)
+            {
+                container.remove();
+            };
+
+
+            var validateSubmitFunc = function(redirect)
+            {
+               var msg = "";
+               var showAlert = false;
+               var hiddenSelectedUser = jQuery("#projectUsersTable .search_hidden_entry");
+               var hiddenSelectedTeam = jQuery("#projectTeamsTable .search_hidden_entry");
+               var hiddenSelectedResult = jQuery("#projectResultsTable .search_hidden_entry");
+
+               if (hiddenSelectedUser.length > 0)
+               {
+                   msg = "You have " + hiddenSelectedUser.length + " user(s) in the project which are filtered out. ";    
+                   showAlert = true;               
+               } else if (hiddenSelectedTeam.length > 0)
+               {
+                   msg = "You have " + hiddenSelectedTeam.length + " team(s) in the project which are filtered out. ";   
+                   showAlert = true;                
+               } else if (hiddenSelectedResult.length > 0)
+               {
+                   msg = "You have " + hiddenSelectedResult.length + " result(s) in the project which are filtered out. ";
+                   showAlert = true;                   
+               }
+               msg += "Filtered out inputs will still be submitted. Are you sure you wish to submit? ";
+
+               var wrapSubmit = function()
+               {
+                   submitSubmitFunc(redirect);
+               };
+               
+               if (showAlert)
+               {
+                   var opt = 
+                   {
+                       content : msg,
+                       confirm : "Confirm",
+                       cancel : "Cancel"
+                   };
+
+                   var callback = 
+                   {
+                       confirm : wrapSubmit,
+                       cancel : cancelAlertFunc
+                   };
+
+                   GDA.showAlert(opt, callback);
+               } else
+               {
+                   submitSubmitFunc(redirect);
+               }            
+               
+            };
+            
+            var submitButton = jQuery(".submit_button");
+            
+            GDA.preventMultipleClick(submitButton, validateSubmitFunc);
+
+            if (fullEdit)
+            {            
+                //user
+                var userLightboxPartialOpt = 
+                {
+                    linkSelector : ".add_more_user",
+                    href : "#lightbox_all_users"
+                };
+                var userTableSortOpt =
+                {
+                        headers: 
+                            { 
+                              1 : 
+                              { 
+                               sorter:'text' 
+                              },
+                              2 : 
+                              { 
+                               sorter:'text' 
+                              },
+                              3 : 
+                              { 
+                               sorter:'text' 
+                              },
+                              4 : 
+                              {
+                                  sorter:'text'
+                              } 
+                            }                         
+                };
+                
+            
+                var userTableOpt = 
+                {
+                        tableAllId : "#allUserTable", 
+                        tableInId : "#selectedUserTable", 
+                        searchContainerId : "#projectUsersTable",
+                        removeButtonId : ".remove_user_button",
+                        confirmRemoveMessage : "${confirmRemoveUserMsg}",
+                        selectAllSelector : ".select_all_user_link",
+                        unselectAllSelector : ".deselect_all_user_link",   
+                        tableSorterOpt : userTableSortOpt
+                };
+    
+                var userTableControl = new TableControl(
+                        userTableOpt,
+                        userLightboxPartialOpt);
+
+                //plug in sort for the all table
+                
+                var allUserTable = jQuery("#allUserTable");
+                if (allUserTable.find("tbody tr").length > 1)
+                {
+                    var defaultSort = [[1,0]];
+
+                    var allTableSortOpt = 
+                    {
+                            sortList : defaultSort,
+                            cssHeader : "sortable_header",
+                            cssAsc : "list_table_sorted order2",
+                            cssDesc : "list_table_sorted order1",
+                            headers: 
+                            {
+                                0 : {sorter: false}, //no sorting on first column
+                                1 : 
+                                { 
+                                 sorter:'text' 
+                                },
+                                2 : 
+                                { 
+                                 sorter:'text' 
+                                },
+                                3 : 
+                                { 
+                                 sorter:'text' 
+                                },
+                                4 : 
+                                { 
+                                 sorter:'text' 
+                                } 
+                            }
+                    };
+                    allUserTable.tablesorter(allTableSortOpt); 
+                };
+                
+                //team
+                var teamLightboxPartialOpt = 
+                {
+                    linkSelector : ".add_more_team",
+                    href : "#lightbox_all_teams"
+                };
+
+                var teamTableSortOpt =
+                {
+                        headers: 
+                            { 
+                              1 : 
+                              { 
+                               sorter:'text' 
+                              }, 
+                              2 : 
+                              { 
+                               sorter:'text' 
+                              },
+                              3 : 
+                              { 
+                               sorter:'text' 
+                              } 
+                            }                         
+                };
+                
+                var teamTableOpt = 
+                {
+                        tableAllId : "#allTeamTable", 
+                        tableInId : "#selectedTeamTable", 
+                        searchContainerId : "#projectTeamsTable",
+                        removeButtonId : ".remove_team_button",
+                        confirmRemoveMessage : "${confirmRemoveTeamMsg}",
+                        selectAllSelector : ".select_all_team_link",
+                        unselectAllSelector : ".deselect_all_team_link",   
+                        tableSorterOpt : teamTableSortOpt
+                };
+    
+                var teamTableControl = new TableControl(
+                        teamTableOpt,
+                        teamLightboxPartialOpt);
+
+                var allTeamTable = jQuery("#allTeamTable");
+                if (allTeamTable.find("tbody tr").length > 1)
+                {
+                    var defaultSort = [[1,0]];
+
+                    var allTableSortOpt = 
+                    {
+                            sortList : defaultSort,
+                            cssHeader : "sortable_header",
+                            cssAsc : "list_table_sorted order2",
+                            cssDesc : "list_table_sorted order1",
+                            headers: 
+                            {
+                                0 : {sorter: false}, //no sorting on first column
+                                1 : 
+                                { 
+                                 sorter:'text' 
+                                },
+                                2 : 
+                                { 
+                                 sorter:'text' 
+                                },
+                                3 : 
+                                { 
+                                 sorter:'text' 
+                                } 
+                            }
+                    };
+                    allTeamTable.tablesorter(allTableSortOpt); 
+                };
+
+            } 
+            else
+            {
+                //team in page
+                var teamTable = jQuery("#selectedTeamTable");
+                var reOddEvenTeamTable = function()
+                {
+                    GDA.doTableOddEven(teamTable);
+                };            
+                    
+                var teamSearchOpt = 
+                {
+                        onAfter : reOddEvenTeamTable
+                };
+                
+                GDA.setupSearch("#projectTeamsTable", teamSearchOpt);
+
+                //user in page
+                var userTable = jQuery("#selectedUserTable");
+                var reOddEvenUserTable = function()
+                {
+                    GDA.doTableOddEven(userTable);
+                };            
+                    
+                var userSearchOpt = 
+                {
+                        onAfter : reOddEvenUserTable
+                };
+                //init search
+                GDA.setupSearch("#projectUsersTable", userSearchOpt);
+
+              
+            }
+            
+            //result
+            
+            var resultLightboxPartialOpt = 
+            {
+                linkSelector : ".add_more_result",
+                href : "${ajaxResultUrl}",
+                type : "ajax"
+            };
+
+            var inTableSorterOpt = 
+            {
+                headers : 
+                { 
+                     1 : 
+                     { 
+                        sorter : "resultIdSorter" 
+                     },
+                     2 : 
+                     { 
+                      sorter:'text' 
+                     },
+                     3 : 
+                     { 
+                      sorter:'text' 
+                     },
+                     5 : 
+                     { 
+                      sorter:'text' 
+                     }
+                }
+            };
+
+            var resultTableOpt = 
+            {
+                    tableAllId : "#paginatedResult", 
+                    tableInId : "#selectedResultTable", 
+                    searchContainerId : "#projectResultsTable",
+                    removeButtonId : ".remove_result_button",
+                    confirmRemoveMessage : "${confirmRemoveResultMsg}",
+                    selectAllSelector : ".select_all_result_link",
+                    unselectAllSelector : ".deselect_all_result_link",
+                    tableSorterOpt : inTableSorterOpt                    
+            };
+
+            var resultTableControl = new TableControl(
+                    resultTableOpt,
+                    resultLightboxPartialOpt);
+                                           
+
+            var ajaxRoot = "${ajaxResultUrl}";
+            var strArray = ajaxRoot.split("?");
+
+            var ajaxResultPath = strArray[0];
+                        
+            var captureResultPagination = function()
+            {
+                var a = jQuery(this);
+                                
+                var href = a.attr("href");
+                
+                jQuery("#ajax_all_results").html("Loading...");
+
+                jQuery("#ajax_all_results").load(href + " .lightbox_target_inner_wrap", resultTableControl.refreshAllTable);
+                return false;
+            };
+            jQuery("#ajax_all_results a").live("click", captureResultPagination);
+
+
+
+            //capture individual edits
+            var viewBulkUrl = "${viewBulkUrl}";
+            var editBulkUrl = "${editBulkUrl}";
+
+            var actionCallback = function(url)
+            {
+                validateSubmitFunc(url);
+            };
+
+            var resultLinkOpt = 
+            {
+                    tableSelector : "#selectedResultTable",
+                    hasChildrenMsg : "${hasChildren}",
+                    noDeleteMsg : "${noDeleteMessage}",
+                    warnDeleteMsg : "${warningMessage}",
+                    noEditPermissionMsg : "${noEditPermissionMessage}",
+                    viewBulkUrl : viewBulkUrl,
+                    editBulkUrl : editBulkUrl,
+                    doTableSelect : false,
+                    actionCallback : actionCallback
+                    
+            };
+
+            var captureTeamAction = function()
+            {
+                var link = jQuery(this);
+                var url = link.attr("href");
+                validateSubmitFunc(url);
+            };
+
+            
+            jQuery("#selectedTeamTable .action_button").live("click", captureTeamAction);
+
+            var resultControl = new ResultLinkControl(resultLinkOpt);
+
+
+
+            //bind result lightbox
+            
+            var doSearch = function()
+            {
+                var textInput = jQuery("#search_lightbox_input");
+
+                var searchTerm = textInput.val();
+
+                var requestData = 
+                {
+                        searchTerm : searchTerm
+                };
+
+                jQuery("#ajax_all_results").html("Loading...");
+
+                jQuery("#ajax_all_results").load("${searchResultsUrl}" + " .lightbox_target_inner_wrap",
+                        requestData, 
+                        resultTableControl.refreshAllTable);
+                return false;                
+            };
+
+            var searchButton = jQuery("#search_lightbox_button").live("click", doSearch);
+                        
+        }
+    );
+
+
+
+</script>

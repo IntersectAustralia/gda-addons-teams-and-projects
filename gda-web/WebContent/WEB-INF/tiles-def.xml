@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+ <!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.1//EN"
+       "http://tiles.apache.org/dtds/tiles-config_2_1.dtd">
+
+
+<tiles-definitions>
+    
+    <!-- Templates -->
+    <definition name="default" template="/WEB-INF/templates/default.jsp">
+        <put-attribute name="menu" value="/WEB-INF/templates/menu.jsp"  />
+        <put-attribute name="breadcrumb" value="/WEB-INF/templates/breadcrumb.jsp"  />            
+        <put-attribute name="header" value="/WEB-INF/templates/header.jsp"  />
+        <put-attribute name="notice" value="/WEB-INF/jsp/notice.jsp"  />        
+        <put-attribute name="titleCode" value="default.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.default"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <!-- Nothing for template -->
+            
+        </put-list-attribute>
+        
+        <put-list-attribute name="additionalCss" cascade="true">
+            <!-- Nothing for template -->
+            
+        </put-list-attribute>
+        
+    </definition>
+            
+    <definition name="twoColLayout" extends="default">        
+        <put-attribute name="body" value="/WEB-INF/templates/twoColLayout.jsp"  />        
+    </definition>
+    
+    <definition name="lightweight" extends="default">
+	    <put-attribute name="menu" value="/WEB-INF/templates/appletMenu.jsp" />
+	    <put-attribute name="body" value="/WEB-INF/templates/blank.jsp"  cascade="true"/>
+	    <put-attribute name="breadcrumb" value="/WEB-INF/templates/blank.jsp"  />
+	    <put-attribute name="titleImage" value="" cascade="true"/>
+    	<put-attribute name="notice" value="/WEB-INF/templates/blank.jsp"  />
+        <put-attribute name="content" value="/WEB-INF/templates/blank.jsp" />
+    </definition>
+    
+    <!-- Login -->
+    <definition name="login" extends="default">        
+        <put-attribute name="breadcrumb" value="/WEB-INF/templates/blank.jsp"  />           
+        <put-attribute name="body" value="/WEB-INF/jsp/login.jsp"  />
+        <put-attribute name="titleCode" value="login.pageTitle"  />
+        
+    </definition>
+    
+    <!-- Home -->
+
+    <!-- ResultHome -->
+    <definition name="resultHome" extends="default">        
+        <put-attribute name="body" value="/WEB-INF/jsp/resultHome.jsp"  />
+        <put-attribute name="titleCode" value="home.pageTitle"   />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.home"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />                  
+        </put-list-attribute>
+    </definition>
+    
+    <!-- Result associated pages -->
+    <definition name="editMeta" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/result/editMeta.jsp" cascade="true"/>
+        <put-attribute name="titleCode" value="meta.edit.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editMeta"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />        
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="viewMeta" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/result/viewMeta.jsp"  cascade="true"/>
+        <put-attribute name="titleCode" value="meta.view.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.viewMeta" cascade="true" />
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>        
+        <put-list-attribute name="additionalCss" cascade="true">                
+                <item value="print" link="/css/metaPrint.css" /> 
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="metaTableEdit" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/meta/editMetaTable.jsp" cascade="true"/>
+        <put-attribute name="titleCode" value="meta.edit.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editMeta"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />        
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>
+    </definition>        
+    
+    <definition name="metaTableView" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/meta/editMetaTable.jsp" cascade="true"/>
+        <put-attribute name="titleCode" value="meta.view.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.viewMeta"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />        
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>
+    </definition>        
+    
+    <definition name="createResult" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/result/createResult.jsp"  />
+        <put-attribute name="titleCode" value="result.create.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.createResult"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="resultAncestry" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/result/resultAncestry.jsp"/>
+        <put-attribute name="titleCode" value="result.ancestry.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.resultAncestry" cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/"/>
+            <item value="breadcrumb.result" link="home"/>
+        </put-list-attribute>
+    </definition>
+    
+    <!-- Search screens -->
+    
+     <definition name="resultSearch" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/search/resultSearch.jsp"  />
+        <put-attribute name="titleCode" value="result.search.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.searchResult"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>
+    </definition>
+    
+    <!-- Files -->
+    
+    <definition name="uploadFiles" extends="lightweight">
+    	<put-attribute name="titleCode" value="uploadFiles.pageTitle"  />
+    	<put-attribute name="titleImage" value="css/images/applettitle_upload.png" cascade="true"/>
+    	<put-attribute name="body" value="/WEB-INF/jsp/result/uploadFiles.jsp" />
+    </definition>
+    
+    <definition name="downloadFiles" extends="lightweight">
+    	<put-attribute name="titleCode" value="downloadFiles.pageTitle"  />
+    	<put-attribute name="titleImage" value="css/images/applettitle_download.png" cascade="true"/>
+    	<put-attribute name="body" value="/WEB-INF/jsp/result/downloadFiles.jsp" />
+    </definition>
+    
+    <definition name="confirmChangeType" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/result/confirmChangeType.jsp"  />
+        <put-attribute name="titleCode" value="result.confirmChangeType.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.confirmChange"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.result" link="home" />                        
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="conferOwnership" extends="default">
+    	<put-attribute name="body" value="/WEB-INF/jsp/result/conferOwnership.jsp" />
+    	<put-attribute name="titleCode" value="result.confer.pageTitle"/>
+    	<put-attribute name="breadcrumbCurrent" value="breadcrumb.conferOwnership" cascade="true"/>
+    	<put-list-attribute name="breadcrumbMenus" cascade="true">
+    		<item value="breadcrumb.gda" link="/" />
+    		<item value="breadcrumb.result" link="home" />
+    	</put-list-attribute>
+    </definition>
+    
+    <!-- User associated pages -->
+    <definition name="userList" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/admin/userList.jsp"  />
+        <put-attribute name="titleCode" value="admin.userList.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.user"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />                                        
+        </put-list-attribute>
+    </definition>
+    
+    
+    <definition name="createUser" extends="default">                
+        <put-attribute name="titleCode" value="admin.createUser.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/admin/editUser.jsp"  />
+        <put-attribute name="pageMode" value="create" cascade="true"/>   
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.createUser"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.user" link="listUsers" />                                  
+        </put-list-attribute>         
+    </definition>
+    
+     <definition name="signUpUser" extends="default">                
+        <put-attribute name="titleCode" value="usercp.signUpUser.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/admin/editUser.jsp"  />
+        <put-attribute name="pageMode" value="signUp" cascade="true"/>   
+        <put-attribute name="breadcrumb" value="/WEB-INF/templates/blank.jsp"  />                    
+    </definition>
+    
+    <definition name="editUser" extends="default">        
+        <put-attribute name="titleCode" value="admin.editUser.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/admin/editUser.jsp"  />
+        <put-attribute name="pageMode" value="edit" cascade="true"/> 
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editUser"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.user" link="listUsers" />                                  
+        </put-list-attribute>             	            
+    </definition>
+    
+    <definition name="editSelfUser" extends="default">        
+        <put-attribute name="titleCode" value="usercp.selfEditUser.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/admin/editUser.jsp"  />
+        <put-attribute name="pageMode" value="selfEdit" cascade="true"/> 
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editSelfUser"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />                                      
+        </put-list-attribute>                           
+    </definition>
+    
+    <!-- Project pages -->
+    <definition name="projectList" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/projects/projectList.jsp"  />
+        <put-attribute name="titleCode" value="projects.projectList.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.projects"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />                                        
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="createProject" extends="default">                
+        <put-attribute name="titleCode" value="projects.createProject.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/projects/editProject.jsp"  />
+        <put-attribute name="pageMode" value="create" cascade="true"/>   
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.createProject"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.projects" link="listProjects" />                                  
+        </put-list-attribute>         
+    </definition>
+    
+    <definition name="editProject" extends="default">                
+        <put-attribute name="titleCode" value="projects.editProject.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/projects/editProject.jsp"  />
+        <put-attribute name="pageMode" value="edit" cascade="true"/>   
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editProject"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.projects" link="listProjects" />                                  
+        </put-list-attribute>         
+    </definition>
+    
+    <definition name="viewProject" extends="default">                
+        <put-attribute name="titleCode" value="projects.viewProject.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/projects/viewProject.jsp"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.viewProject"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.projects" link="listProjects" />                                  
+        </put-list-attribute>         
+    </definition>
+    
+    <!-- Team pages -->
+    <definition name="teamList" extends="default">
+        <put-attribute name="body" value="/WEB-INF/jsp/teams/teamList.jsp"  />
+        <put-attribute name="titleCode" value="teams.teamList.pageTitle"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.teams"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="createTeam" extends="default">                
+        <put-attribute name="titleCode" value="teams.createTeam.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/teams/editTeam.jsp"  />
+        <put-attribute name="pageMode" value="create" cascade="true"/>   
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.createTeam"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.teams" link="listTeams" />
+        </put-list-attribute>         
+    </definition>
+    
+    <definition name="editTeam" extends="default">
+        <put-attribute name="titleCode" value="teams.editTeam.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/teams/editTeam.jsp"  />
+        <put-attribute name="pageMode" value="edit" cascade="true"/>   
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editTeam"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.teams" link="listTeams" />                                  
+        </put-list-attribute>         
+    </definition>
+    
+    <definition name="viewTeam" extends="default">                
+        <put-attribute name="titleCode" value="teams.viewTeam.pageTitle"  />
+        <put-attribute name="body" value="/WEB-INF/jsp/teams/viewTeam.jsp"  />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.viewTeam"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />      
+            <item value="breadcrumb.teams" link="listTeams" />                                  
+        </put-list-attribute>         
+    </definition>
+    
+    <!--  Job Pages -->
+    
+    
+  <!-- JobHome -->
+    <definition name="jobList" extends="default">        
+        <put-attribute name="body" value="/WEB-INF/jsp/jobHome.jsp"  />
+        <put-attribute name="titleCode" value="jobs.pageTitle"   />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.jobHome"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />                  
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="jobAdmin" extends="default">        
+        <put-attribute name="body" value="/WEB-INF/jsp/admin/jobAdminHome.jsp"  />
+        <put-attribute name="titleCode" value="jobs.pageTitle"   />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.jobHome"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />                  
+        </put-list-attribute>
+    </definition>
+    
+    
+    <!-- Job View -->
+     <definition name="jobView" extends="default">        
+        <put-attribute name="body" value="/WEB-INF/jsp/jobs/viewJob.jsp"  />
+        <put-attribute name="titleCode" value="jobs.view.pageTitle"   />
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.viewJob"  cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />   
+            <item value="breadcrumb.jobs" link="/jobHome" />               
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="createJob" extends="default">
+        <put-attribute name="titleCode" value="jobs.create.pageTitle"/>
+        <put-attribute name="body" value="/WEB-INF/jsp/jobs/createJob.jsp"/>
+        <put-attribute name="pageMode" value="create" cascade="true"/>
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.createJob" cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />
+            <item value="breadcrumb.jobs" link="/jobHome" />
+        </put-list-attribute>
+    </definition>
+    
+    <definition name="editJob" extends="default">
+        <put-attribute name="titleCode" value="jobs.edit.pageTitle"/>
+        <put-attribute name="body" value="/WEB-INF/jsp/jobs/createJob.jsp"/>
+        <put-attribute name="pageMode" value="edit" cascade="true"/>
+        <put-attribute name="breadcrumbCurrent" value="breadcrumb.editJob" cascade="true"/>
+        <put-list-attribute name="breadcrumbMenus" cascade="true">
+            <item value="breadcrumb.gda" link="/" />
+            <item value="breadcrumb.jobs" link="/jobHome" />
+        </put-list-attribute>
+    </definition>
+    
+    
+    <!--  AJAX pages -->
+    <definition name="ajaxJsp" template="/WEB-INF/templates/ajaxJsp.jsp">
+        <put-attribute name="content" value="/WEB-INF/templates/blank.jsp" />
+    </definition>
+    
+    <definition name="ajaxViewAllResults" extends="ajaxJsp">
+        <put-attribute name="content" value="/WEB-INF/jsp/ajaxJsp/viewAllResults.jsp" />
+    </definition>
+    
+    
+    <definition name="ajaxAddStep" extends="ajaxJsp">
+        <put-attribute name="content" value="/WEB-INF/jsp/result/outputStepHtml.jsp" />
+    </definition>
+    
+    
+    <definition name="ajaxPotentialParentList" extends="ajaxJsp">
+        <put-attribute name="content" value="/WEB-INF/jsp/result/potentialParentList.jsp" />
+    </definition>
+    
+    
+    <definition name="ajaxParentList" extends="ajaxJsp">
+        <put-attribute name="content" value="/WEB-INF/jsp/result/resultParentList.jsp" />
+    </definition>
+    
+    
+    <definition name="ajaxPotentialProjectList" extends="ajaxJsp">
+        <put-attribute name="content" value="/WEB-INF/jsp/result/potentialProjectList.jsp" />
+    </definition>
+    
+    
+    <definition name="ajaxProjectList" extends="ajaxJsp">
+        <put-attribute name="content" value="/WEB-INF/jsp/result/resultProjectList.jsp" />
+    </definition>
+    
+    <definition name="ajaxFileTree" extends="ajaxJsp">
+    	<put-attribute name="content" value="/WEB-INF/jsp/result/resultFileTree.jsp" />
+    </definition>
+    
+    <definition name="canViewLater" extends="ajaxJsp">
+    	<put-attribute name="content" value="/WEB-INF/jsp/result/canViewLater.jsp"/>
+    </definition>
+    
+    <definition name="hasChildren" extends="ajaxJsp">
+    	<put-attribute name="content" value="/WEB-INF/jsp/result/hasChildren.jsp"/>
+    </definition>
+    
+    
+    
+    
+    <!-- Exceptions -->
+    <definition name="exception" extends="default">        
+        <put-attribute name="notice" value="/WEB-INF/templates/blank.jsp"  />        
+        <put-attribute name="titleCode" value="exception.pageTitle"   />
+        <put-attribute name="body" value="/WEB-INF/templates/exception.jsp"   />
+    </definition>        
+    
+    
+    
+    <definition name="unauthorised" extends="default">        
+        <put-attribute name="notice" value="/WEB-INF/templates/blank.jsp"  />        
+        <put-attribute name="body" value="/WEB-INF/jsp/unauthorised.jsp"  />
+        <put-attribute name="titleCode" value="exception.unauthorised.pageTitle" />
+    </definition>        
+    
+    <definition name="metaSourceException" extends="exception">    
+        <put-attribute name="messageCode" value="exception.metaSourceException.message" cascade="true"  />
+    </definition>        
+    
+    <definition name="schemaSourceException" extends="exception">                
+        <put-attribute name="messageCode" value="exception.schemaSourceException.message" cascade="true"  />
+    </definition>
+    
+    <definition name="xslSourceException" extends="exception">                
+        <put-attribute name="messageCode" value="exception.xslSourceException.message" cascade="true"  />
+    </definition>             
+    
+    
+    <definition name="repositoryException" extends="exception">                
+        <put-attribute name="messageCode" value="exception.repositoryException.message" cascade="true"  />
+    </definition>
+    
+	<definition name="hasChildrenOnDeletionException" extends="exception">                
+        <put-attribute name="messageCode" value="exception.hasChildrenOnDeletion.message" cascade="true"  />
+    </definition>
+    
+    <definition name="systemException" extends="exception">                
+        <put-attribute name="messageCode" value="exception.repositoryException.message" cascade="true"  />
+    </definition>                
+        
+    <definition name="error" extends="exception">                
+        <put-attribute name="messageCode" value="exception.default.message" cascade="true"  />
+    </definition>                
+    
+    <!-- Ajax exception -->
+    <definition name="ajaxexception" extends="ajaxJsp">        
+        <put-attribute name="content" value="/WEB-INF/templates/exception.jsp"   />
+    </definition>        
+    
+    
+    
+    <definition name="ajaxunauthorised" extends="ajaxJsp">        
+        <put-attribute name="body" value="/WEB-INF/jsp/unauthorised.jsp"  />
+    </definition>        
+    
+    <definition name="ajaxmetaSourceException" extends="ajaxexception">    
+        <put-attribute name="messageCode" value="exception.metaSourceException.message" cascade="true"  />
+    </definition>        
+    
+    <definition name="ajaxschemaSourceException" extends="ajaxexception">                
+        <put-attribute name="messageCode" value="exception.schemaSourceException.message" cascade="true"  />
+    </definition>
+    
+    <definition name="ajaxxslSourceException" extends="ajaxexception">                
+        <put-attribute name="messageCode" value="exception.xslSourceException.message" cascade="true"  />
+    </definition>             
+    
+    
+    <definition name="ajaxrepositoryException" extends="ajaxexception">                
+        <put-attribute name="messageCode" value="exception.repositoryException.message" cascade="true"  />
+    </definition>
+    
+    <definition name="ajaxhasChildrenOnDeletionException" extends="ajaxexception">                
+        <put-attribute name="messageCode" value="exception.hasChildrenOnDeletion.message" cascade="true"  />
+    </definition>
+    
+    <definition name="ajaxsystemException" extends="ajaxexception">                
+        <put-attribute name="messageCode" value="exception.repositoryException.message" cascade="true"  />
+    </definition>                
+        
+    <definition name="ajaxerror" extends="ajaxexception">                
+        <put-attribute name="messageCode" value="exception.default.message" cascade="true"  />
+    </definition>                
+    
+    
+</tiles-definitions>

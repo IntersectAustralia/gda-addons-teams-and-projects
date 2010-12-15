@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<!DOCTYPE import-control PUBLIC
+    "-//Puppy Crawl//DTD Import Control 1.0//EN"
+    "http://www.puppycrawl.com/dtds/import_control_1_0.dtd">
+
+	<!--
+		$Id$ This defines legal package dependencies for GDA. This should be
+		used to enforce proper use of the application layers. In general
+		dependency rules within GDA should be: domain -> NOTHING dto ->
+		NOTHING dao -> domain manager -> dao, domain assembler -> domain, dto
+		service -> domain, dto, manager, assembler servlet -> service, dto
+
+		Anyone can use the util package. Dependencies across functional
+		packages should be minimised.
+	-->
+
+<import-control pkg="au.org.intersect.gda">
+
+	<allow pkg="java.util" />
+	<allow pkg="java.text" />
+	<allow pkg="java.io" />
+	<allow pkg="java.net" />
+	<allow pkg="javax.xml" />
+	<allow pkg="org.w3c.dom" />
+	<allow pkg="org.xml.sax" />
+	<allow pkg="org.springframework" />
+	<allow pkg="org.apache.log4j" />
+	<allow pkg="org.apache.commons.lang" />
+	
+	<allow pkg="au.org.intersect.gda.util" />
+
+	<subpackage name="dao">
+		<allow pkg="au.org.intersect.gda.domain" />
+		<allow pkg="javax.persistence" />
+	</subpackage>
+
+	<subpackage name="domain">
+		<allow pkg="javax.persistence" />
+	</subpackage>
+
+	<subpackage name="dto">
+		<allow pkg="org.hibernate.validator"/>
+	</subpackage>
+
+	<subpackage name="manager">
+		<allow pkg="au.org.intersect.gda.domain" />
+		<allow pkg="au.org.intersect.gda.dao" />
+		<allow pkg="au.org.intersect.gda.assembler" />
+	</subpackage>
+
+	<subpackage name="xml">
+	</subpackage>
+
+	<subpackage name="repository">
+	    <allow pkg="au.org.intersect.gda.dto" />
+		<subpackage name="fedora">
+			<allow pkg="fedora.client" />
+			<allow pkg="fedora.server" />
+			<allow pkg="org.apache.axis" />
+			<allow pkg="java.rmi" />
+			<allow pkg="au.org.intersect.gda.repository" />
+			<allow pkg="au.org.intersect.gda.dto" />
+		</subpackage>
+	</subpackage>
+
+	<subpackage name="assembler">
+		<allow pkg="au.org.intersect.gda.domain" />
+		<allow pkg="au.org.intersect.gda.dto" />
+	</subpackage>
+
+	<subpackage name="service">
+		<allow pkg="au.org.intersect.gda.domain" />
+		<allow pkg="au.org.intersect.gda.dao" />
+		<allow pkg="au.org.intersect.gda.dto" />
+		<allow pkg="au.org.intersect.gda.assembler" />
+		<allow pkg="au.org.intersect.gda.repository" />
+		<allow pkg="au.org.intersect.gda.xml" />
+	</subpackage>
+
+	<subpackage name="controller">
+		<allow pkg="au.org.intersect.gda.service" />
+		<allow pkg="au.org.intersect.gda.dto" />
+		<allow pkg="javax.servlet" />
+	</subpackage>
+
+	<subpackage name="web">
+		<allow pkg="javax.servlet" />
+	</subpackage>
+
+	<subpackage name="util">
+		<allow pkg="java.beans" />
+	</subpackage>
+
+	<subpackage name="security">
+		<allow pkg="au.org.intersect.gda.dto" />
+		<allow pkg="au.org.intersect.gda.repository" />
+	</subpackage>
+
+	<subpackage name="ws">
+		<subpackage name="client">
+		</subpackage>
+	</subpackage>
+
+</import-control>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+    >
+    <!-- Application context definition for "gda" DispatcherServlet.  -->
+
+	<!-- Property Configurer -->
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:gda-config.properties"/>
+	</bean>
+
+	<!-- Tiles -->            
+   <bean id="tilesConfigurer" 
+    class="org.springframework.web.servlet.view.tiles2.TilesConfigurer">
+    <property name="definitions">
+            <list>
+                <value>/WEB-INF/tiles-def.xml</value>
+            </list>
+        </property>    
+    </bean>
+    
+    <!-- Tiles view resolver, this has higher precedence -->       
+    <bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.tiles2.TilesView"/>
+        <property name="order" value="1"/>
+    </bean>
+         
+    <!-- Fallback view resolver -->      
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+        <property name="order" value="2"/>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" >
+    	<property name="webBindingInitializer">
+			<!-- Configures Spring MVC DataBinder instances -->
+			<bean class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+				<property name="validator" ref="validator" />
+			</bean>
+		</property>
+    
+    </bean>
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+        <property name="order" value="1"/>            
+    </bean>
+    
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver"/>
+    
+    <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" />
+    <bean id="viewFallbackMappings" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="order" value="2"/>
+        <property name="defaultHandler">
+            <bean class="org.springframework.web.servlet.mvc.UrlFilenameViewController" >
+            </bean>
+        </property>
+    </bean>
+    
+    <!-- Validators -->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean" />
+    
+ 	<bean id="passwordValidator" class="au.org.intersect.gda.validator.PasswordValidator">
+ 		<constructor-arg name="passwordRegex" value="^[\p{Punct}\w]{6,20}$"/>
+ 		<constructor-arg name="regexDescription" value="Must contain only symbols, letters or numbers and be between 6 to 20 characters"/>
+ 	</bean>
+ 	
+ 	  <bean id="usernameValidator" class="au.org.intersect.gda.validator.UsernameValidator">
+        <constructor-arg name="usernameRegex" value="^[\w][\w-_@.]*"/>
+        <constructor-arg name="regexDescription" value="Username must not lead with non-alphanumeric characters, and cannot contain punctuations other than '.', '@', '-' and '_'"/>
+    </bean>
+ 	
+ 	<bean id="signUpUserValidator" class="au.org.intersect.gda.validator.SignUpUserValidator"/>
+
+ 	<bean id="appletConfig" class="au.org.intersect.gda.controller.AppletConfig">
+ 		<constructor-arg name="downloadChunkSize" value="${applet.downloadChunkSize}"/>
+ 		<constructor-arg name="uploadChunkSize" value="${applet.uploadChunkSize}"/>
+ 		<constructor-arg name="serverURL" value="${applet.serverURL}"/>
+ 	</bean>
+    
+    <bean id="jobConfig" class="au.org.intersect.gda.controller.JobConfig">
+        <constructor-arg name="illuminaMaxNumSamples" value="${job.illuminaMaxNumSamples}"/>
+        <constructor-arg name="roche454MaxNumSamples" value="${job.roche454MaxNumSamples}"/>
+        <constructor-arg name="institutionShortName" value="${job.institutionShortName}"/>
+        <constructor-arg name="institutionName" value="${job.institutionName}"/>
+        <constructor-arg name="jobConfigDirectory" value="file:${job.configDirectory}"/>
+        <constructor-arg name="serviceAgreementFilename" value="serviceAgreement.txt"/>
+        <constructor-arg name="sampleIdMaxLength" value="${job.sampleIdMaxLength}"/>
+    </bean>
+ 	
+    <!-- GDA Controllers -->
+    <bean id="ResultController" class="au.org.intersect.gda.controller.ResultController">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+        <constructor-arg name="resultAttachmentService" ref="resultAttachmentService"/>
+        <constructor-arg name="appletConfig" ref="appletConfig"/>
+    </bean>
+    
+    <bean id="ConferOwnershipController" class="au.org.intersect.gda.controller.ConferOwnershipController">
+    	<constructor-arg name="resultService" ref="resultService" />
+    	<constructor-arg name="userManagementService" ref="userManagementService" />
+    </bean>
+    
+    <bean id="ResultAncestryController" class="au.org.intersect.gda.controller.ResultAncestryController">
+        <constructor-arg name="resultMetaService" ref="resultMetaService"/>
+        <constructor-arg name="resultMetaDisplayAssistant" ref="metaDisplayAssistant"/>
+        <constructor-arg name="resultAncestryService" ref="resultAncestryService"/>
+    </bean>
+    
+    <bean id="ResultChildController" class="au.org.intersect.gda.controller.ResultChildController">
+    	<constructor-arg name="resultService" ref="resultService"/>
+    </bean>
+    
+     <bean id="MetaDisplayController" class="au.org.intersect.gda.controller.MetaDisplayController">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="metaDisplayService" ref="metaDisplayService"/>                                         
+        <constructor-arg name="metaDisplayAssistant" ref="metaDisplayAssistant"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+        <constructor-arg name="resultMetaService" ref="resultMetaService"/>       
+        <constructor-arg name="stepDataValidator" ref="stepDataValidator"/>     
+    </bean>
+    
+    <bean id="ResultMetaController" class="au.org.intersect.gda.controller.ResultMetaController">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="resultMetaService" ref="resultMetaService"/>                                         
+        <constructor-arg name="metaDisplayAssistant" ref="metaDisplayAssistant"/>
+        <constructor-arg name="stepDataValidator" ref="stepDataValidator"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+        <constructor-arg name="projectService" ref="projectService"/>                
+    </bean>
+    
+    <bean id="ManageUsersController" class="au.org.intersect.gda.controller.ManageUsersController">
+    	<constructor-arg name="userManagementService" ref="userManagementService"/>
+    	<constructor-arg name="roleService" ref="roleService"/>
+    	<constructor-arg name="passwordValidator" ref="passwordValidator"/>
+    	<constructor-arg name="usernameValidator" ref="usernameValidator"/>
+    </bean>
+    
+    <bean id="UserSelfEditController" class="au.org.intersect.gda.controller.UserSelfEditController">
+        <constructor-arg name="userManagementService" ref="userManagementService"/>
+        <constructor-arg name="passwordValidator" ref="passwordValidator"/>
+    </bean>
+    
+    <bean id="UserSignUpController" class="au.org.intersect.gda.controller.UserSignUpController">
+        <constructor-arg name="userManagementService" ref="userManagementService"/>
+        <constructor-arg name="passwordValidator" ref="passwordValidator"/>
+        <constructor-arg name="signUpUserValidator" ref="signUpUserValidator"/>
+        <constructor-arg name="usernameValidator" ref="usernameValidator"/>
+    </bean>
+    
+    <bean id="ProjectController" class="au.org.intersect.gda.controller.ProjectController">
+    	<constructor-arg name="projectService" ref="projectService"/>
+    	<constructor-arg name="userManagementService" ref="userManagementService"/>
+    	<constructor-arg name="teamService" ref="teamService"/>
+    </bean>
+    
+	<bean id="TeamController" class="au.org.intersect.gda.controller.TeamController">
+    	<constructor-arg name="teamService" ref="teamService"/>
+    	<constructor-arg name="userManagementService" ref="userManagementService"/>
+    </bean>
+    
+    <bean id="ResultParentController" class="au.org.intersect.gda.controller.ResultParentController">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="projectService" ref="projectService"/>
+        <constructor-arg name="searchParamHelper" ref="searchParamHelper"/>
+    </bean>
+    
+    <bean id="ResultSearchController" class="au.org.intersect.gda.controller.ResultSearchController">
+        <constructor-arg name="resultSearchService" ref="resultSearchService"/>
+        <constructor-arg name="projectService" ref="projectService"/>
+        <constructor-arg name="resultSchemaHelper" ref="resultSchemaHelper"/>
+        <constructor-arg name="searchParamHelper" ref="searchParamHelper"/>
+    </bean>
+    
+    <bean id="ResultProjectController" class="au.org.intersect.gda.controller.ResultProjectController">
+        <constructor-arg name="projectService" ref="projectService"/>
+    </bean>
+    
+    <bean id="HomePageController" class="au.org.intersect.gda.controller.HomePageController"/>
+      
+    <bean id="ResultHomeController" class="au.org.intersect.gda.controller.ResultHomeController">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="projectService" ref="projectService"/>
+        <constructor-arg name="searchParamHelper" ref="searchParamHelper"/>
+    </bean>
+    
+    <bean id="ResultAjaxController" class="au.org.intersect.gda.controller.ResultAjaxController">
+        <constructor-arg name="resultService" ref="resultService"/>
+        <constructor-arg name="projectService" ref="projectService"/>
+        <constructor-arg name="searchParamHelper" ref="searchParamHelper"/>
+    </bean>
+    
+    <bean id="JobHomeController" class="au.org.intersect.gda.controller.JobsHomeController">
+        <constructor-arg name="jobService" ref="jobService"/>
+    </bean>
+    
+    <bean id="JobProcessController" class="au.org.intersect.gda.controller.JobProcessController">
+        <constructor-arg name="jobService" ref="jobService"/>
+    </bean>
+    
+    <bean id="ResultFilesController" class="au.org.intersect.gda.controller.ResultFilesController">
+    	<constructor-arg name="resultAttachmentService" ref="resultAttachmentService"/>
+    </bean>
+    
+    <bean id="JobController" class="au.org.intersect.gda.controller.JobController">
+        <constructor-arg name="jobConfig" ref="jobConfig"/>
+        <constructor-arg name="jobService" ref="jobService"/>
+        <constructor-arg name="userManagementService" ref="userManagementService"/>
+        <constructor-arg name="roche454MappingEnumHelper" ref="roche454MetaMappingEnumHelper"/>
+        <constructor-arg name="illuminaMappingEnumHelper" ref="illuminaMetaMappingEnumHelper"/>
+    </bean>
+    
+    <bean id="TransferController" class="au.org.intersect.gda.controller.TransferController">
+        <constructor-arg ref="transferService" />
+    </bean>
+
+</beans>

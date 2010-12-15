@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/security            
+           http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+	<global-method-security pre-post-annotations="enabled">
+		<expression-handler ref="expressionHandler" />
+	</global-method-security>
+
+	<beans:bean id="expressionHandler"
+		class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="gdaPermissionEvaluator" />
+	</beans:bean>
+
+	<beans:bean id="gdaPermissionEvaluator" class="au.org.intersect.gda.security.GdaPermissionEvaluator">
+		<beans:constructor-arg ref="resultPermissionChecker" index="0"/>
+		<beans:constructor-arg ref="projectPermissionChecker" index="1"/>
+		<beans:constructor-arg ref="teamPermissionChecker" index="2"/>
+		<beans:constructor-arg ref="userPermissionChecker" index="3"/>
+		<beans:constructor-arg ref="jobPermissionChecker" index="4"/>
+		<beans:constructor-arg ref="resultPaginationPermissionChecker" index="5"/>        		
+	</beans:bean>
+
+	<beans:bean id="resultPermissionChecker" class="au.org.intersect.gda.security.ResultPermissionChecker">
+		<beans:constructor-arg name="resultRepositoryManager" ref="resultRepositoryManager"/>
+		<beans:constructor-arg name="resultSecurityHelper" ref="resultSecurityHelper"/>
+	</beans:bean>
+	
+	<beans:bean id="resultPaginationPermissionChecker" class="au.org.intersect.gda.security.ResultSearchPaginationPermissionChecker">
+        <beans:constructor-arg name="resultSecurityHelper" ref="resultSecurityHelper"/>
+    </beans:bean>
+
+	<beans:bean id="resultSecurityHelper" class="au.org.intersect.gda.security.ResultSecurityHelper">
+		<beans:constructor-arg ref="resultDAO"/>
+		<beans:constructor-arg ref="gdaUserDAO"/>
+	</beans:bean>
+    
+	<beans:bean id="projectPermissionChecker" class="au.org.intersect.gda.security.ProjectPermissionChecker">
+		<beans:constructor-arg ref="projectDAO"/>
+		<beans:constructor-arg ref="gdaUserDAO"/>
+	</beans:bean>
+	
+	<beans:bean id="teamPermissionChecker" class="au.org.intersect.gda.security.TeamPermissionChecker">
+		<beans:constructor-arg ref="teamDAO"/>
+	</beans:bean>
+	
+    <beans:bean id="jobPermissionChecker" class="au.org.intersect.gda.security.JobPermissionChecker">
+        <beans:constructor-arg ref="jobDAO"/>
+    </beans:bean>
+    
+    <beans:bean id="userPermissionChecker" class="au.org.intersect.gda.security.UserPermissionChecker"/>
+        
+
+	<http use-expressions="true" auto-config='true' access-denied-page="/unauthorised">
+		<intercept-url pattern="/login" filters="none" />
+		<intercept-url pattern="/usercp/userSignUp" filters="none" />
+		<intercept-url pattern="/index*" filters="none" />
+		<intercept-url pattern="/transfer/**" filters="none" />
+        <intercept-url pattern="/applet/**" access="permitAll" />
+		<intercept-url pattern="/css/**" access="permitAll" />
+		<intercept-url pattern="/js/**" access="permitAll" />
+		<intercept-url pattern="/user/**" access="hasRole('EDIT_ALL_USERS')" />
+		<intercept-url pattern="/**" access="hasRole('LOGIN')" />
+		
+		<form-login login-page="/login" default-target-url="/home"
+			authentication-failure-url="/login?login_error=1" />
+		<logout logout-success-url="/login?logout=1" />
+		<custom-filter ref="logoutFilter" before="LOGOUT_FILTER"/>
+	</http>
+	
+	<beans:bean id="logoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+        <beans:constructor-arg value="/login?logout=1"/>
+        <beans:constructor-arg>
+            <beans:list>
+                <beans:ref bean="invalidateUserTokenLogoutHandler"/>
+                <beans:ref bean="springLogoutHandler"/>
+            </beans:list>
+        </beans:constructor-arg>
+        <beans:property name="filterProcessesUrl" value="/j_spring_security_logout"/>
+    </beans:bean>
+    
+    
+    <beans:bean id="invalidateUserTokenLogoutHandler"
+        class="au.org.intersect.gda.security.InvalidateUserTokenLogoutHandler" >
+        <beans:constructor-arg name="sessionAuthHolder" ref="sessionAuthHolder"/>
+    </beans:bean>        
+    
+    
+    <beans:bean id="springLogoutHandler"
+        class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler" />
+    
+    
+    <beans:bean id="loginListener"
+        class="au.org.intersect.gda.security.AuthenticationSuccessListener" >
+          <beans:constructor-arg name="sessionAuthHolder" ref="sessionAuthHolder"/>
+    </beans:bean>                  
+    
+    
+    <beans:bean id="sessionAuthHolder"
+        class="au.org.intersect.gda.security.SessionAuthenticationHolder" />
+    
+
+	<authentication-manager>
+		<authentication-provider user-service-ref="userDetailsService">
+			<password-encoder ref="passwordEncoder">
+				<salt-source user-property="username" />
+			</password-encoder>
+		</authentication-provider>
+	</authentication-manager>
+
+	<beans:bean id="passwordEncoder"
+		class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" />
+
+	<beans:bean id="userDetailsService"
+		class="au.org.intersect.gda.security.GdaUserDetailsManager">
+		<beans:constructor-arg ref="gdaUserDAO" />
+		<beans:constructor-arg ref="gdaUserDetailsAssembler" />
+
+	</beans:bean>
+
+</beans:beans>

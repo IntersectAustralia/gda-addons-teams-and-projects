@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+
+<project name="gda-web" basedir="." default="all">
+	<description>Build for the GDA Project</description>
+	
+	<!-- import the shared targets -->
+	<import file="${basedir}/../intersect-common/common-build.xml"/>
+
+	<!-- project directories -->
+	<property name="web.content.dir" location="WebContent" />
+	<property name="test.lib.dir" location="lib/test" />
+	<property name="app.lib.dir" location="lib/app" /> <!--don't get deployed but needed for compilation-->
+	<property name="webinf.lib.dir" location="${web.content.dir}/WEB-INF/lib" />
+	<property name="webinf.classes.dir" location="${web.content.dir}/WEB-INF/classes" />
+	<property name="webinf.dir" location="${web.content.dir}/WEB-INF"/>
+	<property name="config.dir" location="config" />
+	<property name="jar.dir" location="../intersect-file-repository/build/ant/dist"/>
+	<property name="gen.classpath" value="${webinf.lib.dir}"/>
+	
+    <property name="bin.dir" value="${src.compile.dir}"/>
+    <property name="gen.dir" value="${src.dir}"/>
+    <property name="xmlmime-dir" value="${src.dir}/org/w3"/>
+	
+	<!-- path definitions -->
+	<path id="base.classpath">
+		<fileset dir="${app.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${webinf.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<!--instrumented classes go first so they are used if they exist-->
+		<pathelement location="${instrumented.classes.dir}" />
+		<pathelement location="${src.compile.dir}" />
+		<pathelement location="${webinf.classes.dir}" />
+	</path>
+
+	<path id="test.classpath">
+		<path refid="base.classpath" />
+		<fileset dir="${test.lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement location="${test.compile.dir}" />
+	</path>
+	
+	<!-- taskdefs -->
+	<!-- checkstyle -->
+	<taskdef resource="checkstyletask.properties" classpathref="test.classpath" />
+	<!-- cobertura -->
+	<taskdef resource="tasks.properties" classpathref="test.classpath" />
+
+    <!-- xml beans generation -->
+    <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+        <classpath>
+          <fileset dir="${gen.classpath}">
+            <include name="jaxb-xjc-2.0.1.jar"/>
+            <include name="jaxb-impl-2.0.1.jar"/>
+          </fileset>
+        </classpath>
+    </taskdef>
+	
+	<!-- Private targets - don't do dependency management here. Most stuff is inherited from common-build.xml in intersect-common -->
+	
+	<!-- runs the db scripts (from the dist dir) -->
+	<target name="-create-schema">
+		<property file="${config.dir}/gda-${target-env}.properties"/>
+		<echo message="Properties file: gda-${target-env}.properties"/>
+		<sql classpathref="test.classpath"
+	         driver="${gda.jdbc.driverClassName}"
+	         url="${gda.jdbc.url}"
+	         userid="${gda.jdbc.username}"
+	         password="${gda.jdbc.password}"
+	         src="${dist.dir}/gda-schema.sql"/> 
+		<sql classpathref="test.classpath"
+	         driver="${gda.jdbc.driverClassName}"
+	         url="${gda.jdbc.url}"
+	         userid="${gda.jdbc.username}"
+	         password="${gda.jdbc.password}"
+	         src="${dist.dir}/gda-indexes.sql"/> 
+		<sql classpathref="test.classpath"
+	         driver="${gda.jdbc.driverClassName}"
+	         url="${gda.jdbc.url}"
+	         userid="${gda.jdbc.username}"
+	         password="${gda.jdbc.password}"
+	         src="${dist.dir}/gda-static-data.sql"/>
+    </target>
+	
+	<!-- creates tast data -->
+	<target name="-create-test-data" unless="is-prod">
+		<property file="${config.dir}/gda-${target-env}.properties"/>
+		<sql classpathref="test.classpath"
+	         driver="${gda.jdbc.driverClassName}"
+	         url="${gda.jdbc.url}"
+	         userid="${gda.jdbc.username}"
+	         password="${gda.jdbc.password}"
+	         src="schema/gda-test-data.sql"/>
+	</target>
+	
+	<!-- puts the db scripts in the dist dir, doing the necessary filtering -->
+	<target name="-build-db-scripts">
+		<property file="${config.dir}/gda-${target-env}.properties"/>
+		<filter filtersfile="${config.dir}/gda-${target-env}.properties" />
+		<copy filtering="true" file="schema/gda-create-db.sql" tofile="${dist.dir}/gda-create-db.sql" overwrite="true"/>
+		<copy file="schema/gda-schema.sql" tofile="${dist.dir}/gda-schema.sql" overwrite="true"/>
+		<copy file="schema/gda-indexes.sql" tofile="${dist.dir}/gda-indexes.sql" overwrite="true"/>
+		<copy file="schema/gda-static-data.sql" tofile="${dist.dir}/gda-static-data.sql" overwrite="true"/>
+	</target>
+	
+	<!-- create the gda database -->
+	<target name="-create-db">
+		<sql classpathref="test.classpath"
+	         driver="${gda.jdbc.driverClassName}"
+	         url="${gda.jdbc.base.url}"
+	         userid="${database.admin.name}"
+	         password="${database.admin.password}"
+	         src="${dist.dir}/gda-create-db.sql"
+			 autocommit="true"
+		     onerror="continue"/>
+	</target>
+	
+	<target name="-webapp">
+		<copy todir="${dist.work.dir}" overwrite="true">
+			<fileset dir="${web.content.dir}" />
+		</copy>
+
+		<copy todir="${dist.work.dir}/WEB-INF/classes" overwrite="true">
+			<fileset dir="${src.compile.dir}" />
+		</copy>
+		
+		<copy tofile="${dist.work.dir}/js/release_version.js" overwrite="true" file="release_version.properties" />
+	</target>
+
+	<!-- build war and get config file ready in the dist dir -->
+	<target name="-war">
+		<!-- War it up -->
+		<war basedir="${dist.work.dir}" destfile="${dist.dir}/gda.war" webxml="${dist.work.dir}/WEB-INF/web.xml" />
+		<!-- Put the properties file in the dist dir -->
+		<copy tofile="${dist.dir}/gda-config.properties" file="${config.dir}/gda-${target-env}.properties" overwrite="true"/>
+        <echo message="WARRING: Properties file: gda-${target-env}.properties"/>
+		<!-- Get the metadata schema files -->
+		<copy todir="${dist.dir}/metadata-schema" overwrite="true">
+			<fileset dir="${config.dir}/metadata-schema/${metadata-type}" />
+		</copy>
+		<!-- copy job files -->
+		<copy todir="${dist.dir}/jobs" overwrite="true">
+			<fileset dir="${config.dir}/jobs/" />
+		</copy>
+	</target>
+	
+	<target name="-set-metadata-type" unless="metadata-type">
+		<property name="metadata-type" value="prod" />
+		<echo message="Using metadata schema from prod directory" />
+		<echo message="To use test metatdata, specify 'ant -Dmetadata-type=test ...'" />
+	</target>
+	
+	<target name="-deploy-to-tomcat">
+		<!-- war -->
+		<ant antfile="${basedir}/../gda-tomcat/build.xml" inheritAll="false" target="-deploy-war">
+            <property name="war.file" value="${dist.dir}/gda.war" />
+        </ant>  
+		<!-- properties to tomcat lib -->
+		<ant antfile="${basedir}/../gda-tomcat/build.xml" inheritAll="false" target="-deploy-to-lib">
+            <property name="file.to.deploy" value="${dist.dir}/gda-config.properties" />
+        </ant>
+		<!-- metadata to metadata dir -->
+		<property file="${config.dir}/gda-${target-env}.properties"/>
+		<copy todir="${metadata.schema.directory}" overwrite="true">
+			<fileset dir="${dist.dir}/metadata-schema" />
+		</copy>
+		<!-- jobs to jobs dir -->
+		<copy todir="${job.configDirectory}" overwrite="true">
+			<fileset dir="${dist.dir}/jobs"/>
+		</copy>
+	</target>
+
+	<target name="-get-applet">
+		<ant antfile="${basedir}/../gda-ea/build.xml" inheritAll="false" target="deploy-to-gda-web"/>
+	</target>
+	
+    <target name="-instrument-classes">
+        <delete file="cobertura.ser"/>
+        <cobertura-instrument todir="${instrumented.classes.dir}">
+            <fileset dir="${src.compile.dir}">
+                <!-- Excludes controller classes and auto-generated classes -->
+                <include name="au/**/*.class" />
+            	<exclude name="au/**/controller/*Controller.class"/>
+            </fileset>
+        </cobertura-instrument>
+    </target>
+	
+	<target name="-customise-webxml">
+		<replace file="${webinf.dir}/web.xml" token="$COMMS_SECURITY" value="NONE"/>
+	</target>
+	
+	<target name="-customise-webxml-ssl">
+		<replace file="${webinf.dir}/web.xml" token="$COMMS_SECURITY" value="CONFIDENTIAL"/>
+	</target>
+	
+    <target name="-revert-webxml">
+        <replace file="${webinf.dir}/web.xml" token="CONFIDENTIAL" value="$COMMS_SECURITY"/>
+    	<replace file="${webinf.dir}/web.xml" token="NONE" value="$COMMS_SECURITY"/>
+    </target>
+	
+	<!-- public targets - dependency management is done here -->
+	<target name="clean-data" depends="create-schema" description="Deletes existing data by wiping the database" />
+	<target name="clean" depends="-clean" description="Delete build artifacts" />
+	<target name="compile" depends="-init, -compile" description="Compile source and test source" />
+	<target name="test" depends="compile, -copy-test-resources, -test" description="Run junit tests" />
+	<target name="test-instrumented" depends="compile, -copy-test-resources, -instrument-classes, -test, -cobertura-report" description="Run unit tests on instrumented classes and generate coverage report" />
+	<target name="checkstyle" depends="-init, -checkstyle" description="Generate a report of code convention violations" />
+	<target name="war" depends="-customise-webxml, -set-target-env, -set-metadata-type, compile, -webapp, -get-applet, -war, -revert-webxml" description="Build the gda-web war file" />
+	<target name="war-ssl" depends="-customise-webxml-ssl, -set-target-env-ssl, -set-metadata-type, compile, -webapp, -get-applet, -war, -revert-webxml" description="Build the gda-web war file" />
+	<target name="dist" depends="war, -build-db-scripts" description="Build distrubutable artefacts for gda-web" />
+	<target name="dist-ssl" depends="war-ssl, -build-db-scripts" description="Build distrubutable artefacts for gda-web" />
+	<target name="deploy-to-tomcat-ssl" depends="war-ssl, -deploy-to-tomcat" description="Deploy the gda-web war file but don't touch the database" />
+	<target name="deploy-to-tomcat" depends="war, -deploy-to-tomcat" description="Deploy the gda-web war file but don't touch the database" />
+	<target name="create-schema" depends="-set-target-env, -is-prod, -build-db-scripts, -create-schema, -create-test-data" description="Create the GDA database schema" />
+	<target name="create-schema-ssl" depends="-set-target-env, -is-prod-ssl, -build-db-scripts, -create-schema, -create-test-data" description="Create the GDA database schema" />
+	<target name="create-db" depends="-set-target-env, -is-prod, -build-db-scripts, -create-db" description="Create the GDA database" />
+	<target name="create-db-ssl" depends="-set-target-env-ssl, -is-prod, -build-db-scripts, -create-db" description="Create the GDA database" />
+	
+	<target name="findbugs" depends="-init, -compile, -findbugs" description="Generate a report of findbugs violations" />
+	
+	<target name="install" depends="clean, create-db, create-schema, deploy-to-tomcat" description="Complete build of gda-web db and war file" />
+	<target name="install-ssl" depends="clean, create-db-ssl, create-schema-ssl, deploy-to-tomcat-ssl" description="Complete build of gda-web db and war file" />
+	<target name="all" depends="clean, checkstyle, compile, test, war" description="Compile, checkstyle, run unit tests, build war file" />
+	<target name="hudson-all" depends="clean, checkstyle, compile, test-instrumented, war, findbugs" description="Compile, checkstyle, run unit tests with coverage, build war file" />
+
+	   <!--  findbugs -->
+	    <taskdef name="findbugs" classpathref="findbugs.classpath" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" />
+	
+</project>
